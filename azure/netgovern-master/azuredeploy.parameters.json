@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "vmName": {
+        "value": "RemoteProvider"
+      },
+      "adminUsername": {
+        "value": null
+      },
+      "adminPassword": {
+        "value": null
+      },
+      "vmSize": {
+        "value": null
+      },
+      "virtualNetworkName": {
+        "value": null
+      },
+      "subnetName": {
+        "value": null
+      },
+      "ldapServer": {
+        "value": null
+      },
+      "ldapAdminDn": {
+        "value": "cn=netmail,cn=system,o=netmail"
+      },
+      "ldapAdminPassword": {
+        "value": null
+      },
+      "zookeeperUrl": {
+        "value": null
+      },
+      "postgresqlServer": {
+        "value": null
+      },
+      "postgresqlPort": {
+        "value": "5432"
+      },
+      "postgresqlAdminUser": {
+        "value": "postgres"
+      },
+      "postgresqlAdminPassword": {
+        "value": null
+      },
+      "tenantId": {
+        "value": null
+      },
+      "netmailPassword": {
+        "value": null
+      },
+      "smtpAddress": {
+        "value": null
+      },
+      "smtpPort": {
+        "value": "25"
+      },
+      "remoteProviderIpAddress": {
+        "value": "changeMe"
+      },
+      "remoteProviderAdminUser": {
+        "value": "changeMe"
+      },
+      "remoteProviderPassword": {
+        "value": "changeMe"
+      }
+    }
+  }

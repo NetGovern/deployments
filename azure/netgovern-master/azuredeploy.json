@@ -1,0 +1,356 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM Name"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+            "description": "Username for the Virtual Machine."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+            "description": "Password for the Virtual Machine."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B2s"
+            ],
+            "metadata": {
+                "description": "The size of the virtual machines used when provisioning"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Network Name"
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Name"
+            }
+        },
+        "ldapServer": {
+            "type": "string",
+            "metadata": {
+                "description": "Shared infrastructure - ldap server"
+            }
+        },
+        "ldapAdminDn": {
+            "type": "string",
+            "metadata": {
+                "description": "Shared infrastructure - ldap admin user"
+            },
+            "defaultValue": "cn=netmail,cn=system,o=netmail"
+        },
+        "ldapAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Shared infrastructure - ldap admin password"
+            }
+        },
+        "zookeeperUrl": {
+            "type": "string",
+            "defaultValue": "IP ADDRESS:port number",
+            "metadata": {
+                "description": "Shared infrastructure - zookeeper url - ipaddress:port"
+            }
+        },
+        "postgresqlServer": {
+            "type": "string",
+            "metadata": {
+                "description": "Shared infrastructure - postgresql address"
+            }
+        },
+        "postgresqlPort": {
+            "type": "string",
+            "defaultValue": "5432",
+            "metadata": {
+                "description": "Shared infrastructure - postgresql port"
+            }
+        },
+        "postgresqlAdminUser": {
+            "type": "string",
+            "defaultValue": "postgres",
+            "metadata": {
+                "description": "Shared infrastructure - postgresql admin user"
+            }
+        },
+        "postgresqlAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Shared infrastructure - postgresql admin password"
+            }
+        },
+        "tenantId": {
+            "type": "string",
+            "metadata": {
+                "description": "Tenant ID"
+            }
+        },
+        "netmailPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "netmail admin password"
+            }
+        },
+        "smtpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "smtp server address for notifications"
+            }
+        },
+        "smtpPort": {
+            "type": "string",
+            "defaultValue": "25",
+            "metadata": {
+                "description": "smtp server port for notifications"
+            }
+        },
+        "remoteProviderIpAddress": {
+            "type": "string",
+            "defaultValue": "0.0.0.0",
+            "metadata": {
+                "description": "IP Address to the Remote Provider"
+            }
+        },
+        "remoteProviderAdminUser": {
+            "type": "string",
+            "defaultValue": "changeMe",
+            "metadata": {
+                "description": "Remote Provider Admin user account"
+            }
+        },
+        "remoteProviderPassword": {
+            "type": "securestring",
+            "defaultValue": "changeMe",
+            "metadata": {
+                "description": "Remote Provider Admin password"
+            }
+        }
+    },
+    "variables": {
+        "imageName": "[concat(parameters('vmName'), '-image')]",
+        "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "NICName": "[concat(parameters('vmName'), '-NIC')]",
+        "NICId": "[resourceId('Microsoft.Network/networkInterfaces/', concat(parameters('vmName'), '-NIC'))]",
+        "PublicIPName": "[concat(parameters('vmName'), '-IP')]",
+        "PublicIPId": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(parameters('vmName'), '-IP'))]",
+        "SecGroupId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(parameters('vmName'), '-NSG'))]",
+        "SecGroupName": "[concat(parameters('vmName'), '-NSG')]",
+        "publicIpAddressType": "Dynamic",
+        "publicIpAddressSku": "Basic",
+        "storageAccountType" : "Premium_LRS",
+        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Archive_OS.vhd",
+        "cmdParameters": [
+            "[concat(' -ldap_server ',parameters('ldapServer'))]",
+            "[concat(' -ldap_admin_dn ',parameters('ldapAdminDn'))]",
+            "[concat(' -ldap_admin_password ',parameters('ldapAdminPassword'))]",
+            "[concat(' -zookeeper_url ',parameters('zookeeperUrl'))]",
+            "[concat(' -postgresql_server ',parameters('postgresqlServer'))]",
+            "[concat(' -postgresql_port ',parameters('postgresqlPort'))]",
+            "[concat(' -postgresql_admin_user ',parameters('postgresqlAdminUser'))]",
+            "[concat(' -postgresql_admin_password ',parameters('postgresqlAdminPassword'))]",
+            "[concat(' -tenant_id ',parameters('tenantId'))]",
+            "[concat(' -netmail_password ',parameters('netmailPassword'))]",
+            "[concat(' -remote_provider_ip_address ',parameters('remoteProviderIpAddress'))]",
+            "[concat(' -remote_provider_admin_user ',parameters('remoteProviderAdminUser'))]",
+            "[concat(' -remote_provider_password ',parameters('remoteProviderPassword'))]",
+            "[concat(' -smtp_server ',parameters('smtpAddress'))]",
+            "[concat(' -smtp_server_port ',parameters('smtpPort'))]"
+        ],
+        "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File MasterSetupWizard.ps1",
+        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-18cbf8c1-4bc2-4973-b983-01f019ff68cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/images",
+            "apiVersion": "2018-04-01",
+            "name": "[variables('imageName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "storageProfile": {
+                "osDisk": {
+                  "osType": "Windows",
+                  "osState": "Generalized",
+                  "blobUri": "[variables('osDiskVhdUri')]",
+                  "caching": "ReadWrite",
+                  "storageAccountType": "[variables('storageAccountType')]"
+                }
+              }
+            }
+        },
+        {
+            "name": "[parameters('vmName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2018-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('NICName')]",
+                "[variables('imageName')]"
+            ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[resourceId('Microsoft.Compute/images', variables('imageName'))]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[variables('NICId')]"
+                        }
+                    ]
+                }
+            }
+        },
+
+        {
+            "name": "[variables('NICName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('PublicIPName')]",
+                "[variables('SecGroupName')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[variables('PublicIPId')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[variables('SecGroupId')]"
+                }
+            }
+        },
+        {
+            "name": "[variables('PublicIPName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIpAddressType')]"
+            },
+            "sku": {
+                "name": "[variables('publicIpAddressSku')]"
+            }
+        },
+        {
+            "name": "[variables('SecGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-01-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-rdp",
+                        "properties": {
+                            "priority": 1010,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [],
+                            "destinationApplicationSecurityGroups": [],
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "3389"
+                        }
+                    },
+                    {
+                        "name": "https",
+                        "properties": {
+                            "priority": 1020,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [],
+                            "destinationApplicationSecurityGroups": [],
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "443"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'),'/extensions')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            ],
+            "tags": {
+                "displayName": "config-remote-provider"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[concat(variables('scriptsLocationUri'),'MasterSetupWizard.ps1')]",
+                        "[concat(variables('scriptsLocationUri'),'basedata.ps1')]",
+                        "[concat(variables('scriptsLocationUri'),'ConfigureDP.ps1')]",
+                        "[concat(variables('scriptsLocationUri'),'ngfunctions.ps1')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat(variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13],variables('cmdParameters')[14])]"
+                }
+            }
+        }
+    ]
+}
