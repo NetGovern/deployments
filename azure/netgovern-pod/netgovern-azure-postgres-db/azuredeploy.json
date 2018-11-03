@@ -1,0 +1,74 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "administratorLogin": {
+            "type": "string",
+            "metadata": {
+            "description": "Username for the Virtual Postgres server."
+            }
+        },
+        "administratorLoginPassword": {
+            "type": "securestring",
+            "metadata": {
+            "description": "Password for the Virtual Machine."
+            }
+        },
+        "serverBaseName": {
+            "type": "string",
+            "defaultValue": "Please choose a unique name",
+            "metadata": {
+                "description": "Postgres Server Base Name. It has to be unique, a random string will be appended"
+            }
+        }
+    },
+    "variables": {
+        "version": "9.6",
+        "skuCapacity": 1,
+        "skuFamily": "Gen5",
+        "skuName": "B_Gen5_1",
+        "skuSizeMB": 5120,
+        "skuTier": "Basic",
+        "backupRetentionDays": 7,
+        "geoRedundantBackup": "Disabled"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-18cbf8c1-4bc2-4973-b983-01f019ff68cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-12-01-preview",
+            "kind": "",
+            "location": "[resourceGroup().location]",
+            "name": "[concat(toLower(parameters('serverBaseName')),uniqueString(resourceGroup().id))]",
+            "properties": {
+                "version": "[variables('version')]",
+                "administratorLogin": "[parameters('administratorLogin')]",
+                "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                "storageProfile": {
+                    "storageMB": "[variables('skuSizeMB')]",
+                    "backupRetentionDays": "[variables('backupRetentionDays')]",
+                    "geoRedundantBackup": "[variables('geoRedundantBackup')]"
+                }
+            },
+            "sku": {
+                "name": "[variables('skuName')]",
+                "tier": "[variables('skuTier')]",
+                "capacity": "[variables('skuCapacity')]",
+                "size": "[variables('skuSizeMB')]",
+                "family": "[variables('skuFamily')]"
+            },
+            "type": "Microsoft.DBforPostgreSQL/servers"
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "value": "RemoteProvider"
+        },
+        "adminUsername": {
+            "value": null
+        },
+        "adminPassword": {
+            "value": null
+        },
+        "ldapServer": {
+            "value": null
+        },
+        "multitenantnipeLdapPassword": {
+            "value": null
+        },
+        "zookeeperUrl": {
+            "value": null
+        },
+        "vmSize": {
+            "value": null
+        },
+        "virtualNetworkName": {
+            "value": null
+        },
+        "subnetName": {
+            "value": null
+        }
+    }
+}

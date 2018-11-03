@@ -1,0 +1,236 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachineBaseName": {
+            "type": "string"
+        },
+        "virtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_B2ms",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B4ms",
+                "Standard_B8ms",
+                "Standard_D4s_v3",
+                "Standard_D8s_v3",
+                "Standard_D16s_v3"
+            ]
+        },
+        "count": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Number of VMs to deploy."
+                }
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnetName": {
+            "type": "string"
+        },
+        "dataDiskSizeGB": {
+            "type": "int",
+            "defaultValue": 150,
+            "minValue": 150,
+            "maxValue": 1024
+        }
+    },
+    "variables": {
+        "virtualMachineBaseName": "[parameters('virtualMachineBaseName')]",
+        "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "publicIpAddressType": "Dynamic",
+        "publicIpAddressSku": "Basic",
+        "storageAccountType": "Premium_LRS",
+        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Index_OS.vhd",
+        "scriptsLocationUri": "https://bitbucket.netmail.com/deployment/index/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-18cbf8c1-4bc2-4973-b983-01f019ff68cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2017-03-30",
+            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_OSdisk')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Import",
+                    "sourceUri": "[variables('osDiskVhdUri')]"
+                },
+                "osType": "Linux"
+            },
+            "copy": {
+                "name": "IndexCopy",
+                "count": "[parameters('count')]"
+            }
+        },
+        {
+            "name": "[concat(variables('virtualMachineBaseName'), copyIndex(1))]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2018-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NIC')]",
+                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_OSdisk')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Linux",
+                        "caching": "ReadWrite",
+                        "createOption": "Attach",
+                        "managedDisk": {
+                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachineBaseName'), copyIndex(1),'_OSdisk'))]",
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "diskSizeGB": "[parameters('dataDiskSizeGB')]",
+                            "lun": 0,
+                            "createOption": "Empty"
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat( parameters('virtualMachineBaseName'), copyIndex(1),'_NIC'))]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "IndexCopy",
+                "count": "[parameters('count')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NIC')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_IP')]",
+                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NSG')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(variables('virtualMachineBaseName'), copyIndex(1),'_IP'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(variables('virtualMachineBaseName'), copyIndex(1),'_NSG'))]"
+                }
+            },
+            "copy": {
+                "name": "IndexCopy",
+                "count": "[parameters('count')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_IP')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIpAddressType')]"
+            },
+            "copy": {
+                "name": "IndexCopy",
+                "count": "[parameters('count')]"
+            },
+            "sku": {
+                "name": "[variables('publicIpAddressSku')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'/extensions')]",
+            "apiVersion": "2017-03-30",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineBaseName'), copyIndex(1))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "sh azure_configure_new_data_disk.sh",
+                    "fileUris": [
+                        "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]"
+                    ]
+                }
+            },
+            "copy": {
+                "name": "IndexCopy",
+                "count": "[parameters('count')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NSG')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-01-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "priority": 1010,
+                            "protocol": "Tcp",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [],
+                            "destinationApplicationSecurityGroups": [],
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "22"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "IndexCopy",
+                "count": "[parameters('count')]"
+            }
+        }
+    ],
+    "outputs": {
+        "zookeeperIpAddress": {
+            "type": "string",
+            "value": "reference(concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NIC')).ipConfigurations[0].properties.privateIPAddress)"
+        }
+    }
+}

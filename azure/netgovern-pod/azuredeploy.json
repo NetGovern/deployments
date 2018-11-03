@@ -1,0 +1,340 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "StorageServerAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Storage Server Virtual Machine"
+            }
+        },
+        "StorageServerAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Storage Server Virtual Machine"
+            }
+        },
+        "StorageServerWindowsOSVersion": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter",
+            "allowedValues": [
+                "2012-R2-Datacenter",
+                "2016-Datacenter"
+            ],
+            "metadata": {
+                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+            }
+        },
+        "StorageServerVmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B1ms",
+                "Standard_B2"
+            ],
+            "metadata": {
+                "description": "The Azure size of the Storage Server Virtual Machines"
+            }
+        },
+        "StorageServerDataDiskSizeGB": {
+            "type": "int",
+            "defaultValue": 250,
+            "minValue": 100,
+            "maxValue": 2048,
+            "metadata": {
+                "description": "The size of the virtual machines used when provisioning"
+            }
+        },
+        "indexVirtualMachineBaseName": {
+            "type": "string",
+            "metadata": {
+                "description": "Base name used to create the Index Server(s)"
+            }
+        },
+        "indexVirtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_B2ms",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B4ms",
+                "Standard_B8ms",
+                "Standard_D4s_v3",
+                "Standard_D8s_v3",
+                "Standard_D16s_v3"
+            ],
+            "metadata": {
+                "description": "Virtual Machine sizes for the Index Server(s).  B series are not recommended for Production workloads"
+            }
+        },
+        "indexCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Number of index VMs to deploy."
+            }
+        },
+        "indexDataDiskSizeGB": {
+            "type": "int",
+            "defaultValue": 150,
+            "minValue": 150,
+            "maxValue": 1024,
+            "metadata": {
+                "description": "Size of the data disk to be attached to VMs"
+            }
+        },
+        "ldapClusterAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the LDAP Cluster Virtual Machines"
+            }
+        },
+        "ldapClusterAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the LDAP Cluster Virtual Machines"
+            }
+        },
+        "ldapClusterNetmailUserPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Netmail Application User in LDAP Cluster Virtual Machines"
+            }
+        },
+        "ldapClusterVmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B1ms",
+                "Standard_B2s"
+            ],
+            "metadata": {
+                "description": "The size of the LDAP Cluster Virtual Machines"
+            }
+        },
+        "remoteProviderVmName": {
+            "type": "string",
+            "defaultValue": "RemoteProvider",
+            "metadata": {
+                "description": "Virtual Machine Name for the Remote Provider server"
+            }
+        },
+        "remoteProviderAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Virtual Machine."
+            }
+        },
+        "remoteProviderAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine."
+            }
+        },
+        "remoteProviderVmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_D2s_v3"
+            ],
+            "metadata": {
+                "description": "The size of the virtual machines for the Remote Provider server"
+            }
+        },
+        "postgresAdministratorLogin": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Virtual Postgres server."
+            }
+        },
+        "postgresAdministratorLoginPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine."
+            }
+        },
+        "postgresServerBaseName": {
+            "type": "string",
+            "defaultValue": "dbpod",
+            "metadata": {
+                "description": "Postgres Server Base Name. A unique string will be appended"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Network Name"
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Name"
+            }
+        }
+    },
+    "variables": {
+        "baseUri": "https://bitbucket.netmail.com"
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "name": "linkedTemplateSharedStorage",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-shared-storage/azuredeploy.json')]"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('StorageServerAdminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('StorageServerAdminPassword')]"
+                    },
+                    "windowsOSVersion": {
+                        "value": "[parameters('StorageServerWindowsOSVersion')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('StorageServerVmSize')]"
+                    },
+                    "diskSize": {
+                        "value": "[parameters('StorageServerDataDiskSizeGB')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    }
+                }
+            }
+        },
+        {    
+            "apiVersion": "2017-05-10",
+            "name": "linkedTemplateIndex",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-index-cluster/azuredeploy.json')]"
+                },
+                "parameters": {
+                    "virtualMachineBaseName": {
+                        "value": "[parameters('indexVirtualMachineBaseName')]"
+                    },
+                    "virtualMachineSize": {
+                        "value": "[parameters('indexVirtualMachineSize')]"
+                    },
+                    "count": {
+                        "value": "[parameters('indexCount')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    },
+                    "dataDiskSizeGB": {
+                        "value": "[parameters('indexDataDiskSizeGB')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "linkedTemplateLDAP",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-ldap-cluster/azuredeploy.json')]"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('ldapClusterAdminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('ldapClusterAdminPassword')]"
+                    },
+                    "netmailPassword": {
+                        "value": "[parameters('ldapClusterNetmailUserPassword')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('ldapClusterVmSize')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "linkedTemplatePostgresDB",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-azure-postgres-db/azuredeploy.json')]"
+                },
+                "parameters": {
+                    "administratorLogin": {
+                        "value": "[parameters('postgresAdministratorLogin')]"
+                    },
+                    "administratorLoginPassword": {
+                        "value": "[parameters('postgresAdministratorLoginPassword')]"
+                    },
+                    "serverBaseName": {
+                        "value": "[parameters('postgresServerBaseName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "linkedTemplateDP",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-remote-provider/azuredeploy.json')]"
+                },
+                "parameters": {
+                    "vmName": {
+                        "value": "[parameters('remoteProviderVmName')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('remoteProviderAdminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('remoteProviderAdminPassword')]"
+                    },
+                    "ldapServer": {
+                        "value": "[reference('linkedTemplateLDAP').outputs.ldapIpAddress.value]"
+                    },
+                    "multitenantnipeLdapPassword": {
+                        "value": "[parameters('ldapClusterNetmailUserPassword')]"
+                    },
+                    "zookeeperUrl": {
+                        "value": "[concat(reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value,':32000')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('remoteProviderVmSize')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "linkedTemplateIndex",
+                "linkedTemplateLDAP"
+            ]
+        }
+    ]
+}

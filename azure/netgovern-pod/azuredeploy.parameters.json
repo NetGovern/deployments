@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "StorageServerAdminUsername": {
+        "value": null
+      },
+      "StorageServerAdminPassword": {
+        "value": null
+      },
+      "StorageServerWindowsOSVersion": {
+        "value": "2016-Datacenter"
+      },
+      "StorageServerVmSize": {
+        "value": null
+      },
+      "StorageServerDataDiskSizeGB": {
+        "value": 250
+      },
+      "indexVirtualMachineBaseName": {
+        "value": null
+      },
+      "indexVirtualMachineSize": {
+        "value": "Standard_B2s"
+      },
+      "indexCount": {
+        "value": 1
+      },
+      "indexDataDiskSizeGB": {
+        "value": 150
+      },
+      "ldapClusterAdminUsername": {
+        "value": null
+      },
+      "ldapClusterAdminPassword": {
+        "value": null
+      },
+      "ldapClusterNetmailUserPassword": {
+        "value": null
+      },
+      "ldapClusterVmSize": {
+        "value": null
+      },
+      "remoteProviderVmName": {
+        "value": "RemoteProvider"
+      },
+      "remoteProviderAdminUsername": {
+        "value": null
+      },
+      "remoteProviderAdminPassword": {
+        "value": null
+      },
+      "remoteProviderVmSize": {
+        "value": null
+      },
+      "postgresAdministratorLogin": {
+        "value": null
+      },
+      "postgresAdministratorLoginPassword": {
+        "value": null
+      },
+      "postgresServerBaseName": {
+        "value": "dbpod"
+      },
+      "virtualNetworkName": {
+        "value": null
+      },
+      "subnetName": {
+        "value": null
+      }
+    }
+  }
