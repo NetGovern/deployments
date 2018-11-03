@@ -1,0 +1,228 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "netmailPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Netmail Application User"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B1ms",
+                "Standard_B2s"
+            ],
+            "metadata": {
+                "description": "The size of the virtual machines used when provisioning"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Network Name"
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Name"
+            }
+        }
+    },
+    "variables": {
+        "publicIpAddressSku": "Basic",
+        "nicName": "OpenLDAP-NIC",
+        "storageAccountType": "Standard_LRS",
+        "publicIPAddressName": "OpenLDAP-PublicIP",
+        "publicIPAddressType": "Dynamic",
+        "vmName": "OpenLDAP",
+        "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "networkSecurityGroupName": "OpenLDAP-NSG",
+        "location":"[resourceGroup().location]",
+        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/",
+        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/ldap.vhd",
+        "LDAPInstallCMD": "[concat('sh configure_ldap.sh -r ', parameters('netmailPassword'),' -c ',parameters('netmailPassword'),' -n ',parameters('netmailPassword'))]",
+        "count": 2
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-08-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('publicIPAddressName'),'-',copyIndex(1))]",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]"
+            },
+            "sku": {
+                "name": "[variables('publicIpAddressSku')]"
+            },
+            "copy": {
+                "name": "LDAPCopy",
+                "count": "[variables('count')]"
+            }
+        },
+        {
+            "name": "[concat(variables('networkSecurityGroupName'),'-',copyIndex(1))]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-01-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "priority": 1000,
+                            "sourceAddressPrefix": "*",
+                            "protocol": "Tcp",
+                            "destinationPortRange": "22",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "LDAPCopy",
+                "count": "[variables('count')]"
+            }
+        },
+        {
+            "apiVersion": "2018-04-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(variables('nicName'),'-',copyIndex(1))]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'),'-',copyIndex(1))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'),'-',copyIndex(1))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),'-',copyIndex(1)))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('networkSecurityGroupName'),'-',copyIndex(1)))]"
+                }
+            },
+            "copy": {
+                "name": "LDAPCopy",
+                "count": "[variables('count')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2017-03-30",
+            "name": "[concat(variables('vmName'), copyIndex(1),'_OSdisk')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Import",
+                    "sourceUri": "[variables('osDiskVhdUri')]"
+                },
+                "osType": "Linux"
+            },
+            "copy": {
+                "name": "LDAPCopy",
+                "count": "[variables('count')]"
+            }
+        },
+        {
+            "apiVersion": "2018-04-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(variables('vmName'),'-',copyIndex(1))]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/',variables('nicName'),'-',copyIndex(1))]",
+                "[concat('Microsoft.Compute/disks/',variables('vmName'), copyIndex(1),'_OSdisk')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Linux",
+                        "caching": "ReadWrite",
+                        "createOption": "Attach",
+                        "managedDisk": {
+                            "id": "[resourceId('Microsoft.Compute/disks', concat(variables('vmName'), copyIndex(1),'_OSdisk'))]",
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'-',copyIndex(1)))]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "LDAPCopy",
+                "count": "[variables('count')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmName'),'-1/','extensions')]",
+            "apiVersion": "2017-03-30",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'),'-1')]",
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'),'-2')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "[concat('sh -c \"echo ', parameters('netmailPassword'),' | sudo passwd netmail --stdin\"',' && ', variables('LDAPInstallCMD'), ' -i ', reference(concat(variables('nicName'),'-2')).ipConfigurations[0].properties.privateIPAddress)]",
+                    "fileUris": [
+                        "[concat(variables('scriptsLocationUri'),'configure_ldap.sh')]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmName'),'-2/','extensions')]",
+            "apiVersion": "2017-03-30",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'),'-1')]",
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'),'-2')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "[concat('sh -c \"echo ', parameters('netmailPassword'),' | sudo passwd netmail --stdin\"',' && ', variables('LDAPInstallCMD'), ' -i ', reference(concat(variables('nicName'),'-1')).ipConfigurations[0].properties.privateIPAddress)]",
+                    "fileUris": [
+                        "[concat(variables('scriptsLocationUri'),'configure_ldap.sh')]"
+                    ]
+                }
+            }
+        }
+    ]
+}
