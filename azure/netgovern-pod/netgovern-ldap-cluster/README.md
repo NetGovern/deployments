@@ -10,3 +10,19 @@ The parameters feed the shell script that configures the ldap cluster as needed 
     <img src="https://azuredeploy.net/deploybutton.png"/>
 </a>
 
+---
+
+## Powershell:
+
+```  
+New-AzureRmResourceGroupDeployment -Name <deployment-name> -ResourceGroupName <resource-group-name> `
+    -TemplateUri https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/netgovern-pod/netgovern-ldap-cluster/azuredeploy.json
+```
+
+---
+
+## Azure CLI:
+```  
+azure config mode arm
+azure group deployment create <my-resource-group> <my-deployment-name> --template-uri https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/netgovern-pod/netgovern-ldap-cluster/azuredeploy.json
+```

@@ -1,9 +1,28 @@
-# ARM Templates
+# ARM Template - POD Deployment
+This ARM template deploys the shared layer services needed for a multitenant installation.
 
-## Azure Resource Management templates
-The provided set of templates enable the partner or client to provision netgovern VMs and infrastructure.
+The template collects parameters taht will be passed to each one of the nested templates in the subfolders.
+The linked templates can be deployed separately if needed, by browsing to each subfolder.
 
-* netgovern-pod/* contains a main arm template that links to all of the subfolders.  Each linked template can also be deployed individually.
-* netgovern-master/* contains the arm template to deploy and configure a new master into an existing pod
-* netgovern-worker/* contains the arm template to deploy and configure a new worker for an existing master
-* infrastructure-network/* contains the arm template to deploy a new Virtual Network and Subnet
+---
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fbitbucket.netmail.com%2Fprojects%2FPUB%2Frepos%2Fdeployments%2Fraw%2Fazure%2Fnetgovern-pod%2Fazuredeploy.json" target="_blank">
+    <img src="https://azuredeploy.net/deploybutton.png"/>
+</a>
+
+---
+
+## Powershell:
+
+```  
+New-AzureRmResourceGroupDeployment -Name <deployment-name> -ResourceGroupName <resource-group-name> `
+    -TemplateUri https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/netgovern-pod/azuredeploy.json
+```
+
+---
+
+## Azure CLI:
+```  
+azure config mode arm
+azure group deployment create <my-resource-group> <my-deployment-name> --template-uri https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/netgovern-pod/azuredeploy.json
+```

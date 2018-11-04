@@ -10,3 +10,19 @@ The data disk indicated in one of the parameters is mounted to /var/netmail
     <img src="https://azuredeploy.net/deploybutton.png"/>
 </a>
 
+---
+
+## Powershell:
+
+```  
+New-AzureRmResourceGroupDeployment -Name <deployment-name> -ResourceGroupName <resource-group-name> `
+    -TemplateUri https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/netgovern-pod/netgovern-index-cluster/azuredeploy.json
+```
+
+---
+
+## Azure CLI:
+```  
+azure config mode arm
+azure group deployment create <my-resource-group> <my-deployment-name> --template-uri https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/netgovern-pod/netgovern-index-cluster/azuredeploy.json
+```
