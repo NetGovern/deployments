@@ -45,7 +45,7 @@
         "publicIpAddressSku": "Basic",
         "storageAccountType": "Premium_LRS",
         "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Index_OS.vhd",
-        "scriptsLocationUri": "https://bitbucket.netmail.com/deployment/index/"
+        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
     },
     "resources": [
         {
