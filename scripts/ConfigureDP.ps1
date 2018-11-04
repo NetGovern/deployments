@@ -111,6 +111,7 @@ $xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.enabled=.+", "cloud.enabled=true"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.nipe_list=.+", "cloud.nipe_list=http://$($ipaddress):8088"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.white_list=.+", "cloud.white_list=$ipaddress,$rp_server_address"
 
+#Replacing values with same values from NIPE's edir.properties
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.host=.+", `
     "edir.host=$(((Select-String 'edir.host=' $edir_properties_nipe_master).Line -split '=',2)[1])"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.logindn=.+", `

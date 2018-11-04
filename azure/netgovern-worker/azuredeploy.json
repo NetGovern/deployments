@@ -30,6 +30,24 @@
                 "description": "The size of the virtual machines used when provisioning"
             }
         },
+        "masterAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username to access the the target Archive Master."
+            }
+        },
+        "masterAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password to access the the target Archive Master."
+            }
+        },
+        "masterIPAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "IP Address of the target Archive Master."
+            }
+        },
         "virtualNetworkName": {
             "type": "string",
             "metadata": {
@@ -56,7 +74,14 @@
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
         "storageAccountType" : "Premium_LRS",
-        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Archive_OS.vhd"
+        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Archive_OS.vhd",
+        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/",
+        "cmdParameters": [
+            "[concat(' -master_server_address ',parameters('masterIPAddress'))]",
+            "[concat(' -master_admin_user ',parameters('masterAdminUsername'))]",
+            "[concat(' -master_admin_password ',parameters('masterAdminPassword'))]"
+        ],
+        "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File ConfigureWorker.ps1"
     },
     "resources": [
         {
@@ -189,6 +214,32 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'),'/extensions')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            ],
+            "tags": {
+                "displayName": "config-remote-provider"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[concat(variables('scriptsLocationUri'),'ConfigureWorker.ps1')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat(variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2])]"
+                }
             }
         }
     ]
