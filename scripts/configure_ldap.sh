@@ -32,9 +32,23 @@ if [ -z "${ADMIN_PASSWD}" ] || [ -z "${CLOUD_ADMIN_PASSWD}" ] || [ -z "${NIPE_PA
     usage
 fi
 
+# PREPARE PLATFORM
+sudo yum install epel-release -y
+sudo yum update -y
+sudo yum install -y gettext sshpass jq cifs-utils gdb bind-utils wget screen net-tools sudo telnet nmap tcpdump rsync python python-libs
+
+sudo useradd netmail -m
+echo ${ADMIN_PASSWD} | sudo passwd netmail --stdin
+sudo sh -c 'echo "netmail ALL=(ALL)    NOPASSWD: ALL" >> /etc/sudoers'
+
+# INSTALL PLATFORM
+RPM="CENTOS-NETMAIL-PLATFORM-6.2.1.844_release-Linux.rpm"
+wget --no-check-certificate \
+    https://netgovernpkgs.blob.core.windows.net/download/${RPM}
+
+sudo yum localinstall -y ${RPM}
 sudo systemctl stop netmail
-#Utilities
-sudo yum install -y jq gettext sshpass
+
 
 #Rename VM to ensure unique names in the cluster
 NEW_HOST_NAME=`curl -s -H Metadata:true "http://169.254.169.254/metadata/instance?api-version=2017-12-01" | jq -r '.compute' | jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" | grep name | awk -F'=' '{ print $2 }'`
