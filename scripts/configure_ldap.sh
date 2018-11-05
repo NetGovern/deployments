@@ -28,13 +28,13 @@ while getopts ":r:c:n:i:" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z "${ADMIN_PASSWD}" ] || [ -z "${CLOUD_ADMIN_PASSWD}" ] || [ -z "${NIPE_PASSWD}" ] || [ -z "${MIRROR_IPADDR}" ] ]; then
+if [ -z "${ADMIN_PASSWD}" ] || [ -z "${CLOUD_ADMIN_PASSWD}" ] || [ -z "${NIPE_PASSWD}" ] || [ -z "${MIRROR_IPADDR}" ]; then
     usage
+    exit 1
 fi
 
 # PREPARE PLATFORM
 sudo yum install epel-release -y
-sudo yum update -y
 sudo yum install -y gettext sshpass jq cifs-utils gdb bind-utils wget screen net-tools sudo telnet nmap tcpdump rsync python python-libs
 
 sudo useradd netmail -m
