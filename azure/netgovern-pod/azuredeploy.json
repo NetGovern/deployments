@@ -81,18 +81,6 @@
                 "description": "Size of the data disk to be attached to VMs"
             }
         },
-        "ldapClusterAdminUsername": {
-            "type": "string",
-            "metadata": {
-                "description": "User name for the LDAP Cluster Virtual Machines"
-            }
-        },
-        "ldapClusterAdminPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for the LDAP Cluster Virtual Machines"
-            }
-        },
         "ldapClusterNetmailUserPassword": {
             "type": "securestring",
             "metadata": {
@@ -249,12 +237,6 @@
                     "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-ldap-cluster/azuredeploy.json')]"
                 },
                 "parameters": {
-                    "adminUsername": {
-                        "value": "[parameters('ldapClusterAdminUsername')]"
-                    },
-                    "adminPassword": {
-                        "value": "[parameters('ldapClusterAdminPassword')]"
-                    },
                     "netmailPassword": {
                         "value": "[parameters('ldapClusterNetmailUserPassword')]"
                     },

@@ -29,12 +29,6 @@
       "indexDataDiskSizeGB": {
         "value": 150
       },
-      "ldapClusterAdminUsername": {
-        "value": null
-      },
-      "ldapClusterAdminPassword": {
-        "value": null
-      },
       "ldapClusterNetmailUserPassword": {
         "value": null
       },
