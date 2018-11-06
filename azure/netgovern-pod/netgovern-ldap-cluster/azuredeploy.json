@@ -2,6 +2,18 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "osAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Network Name"
+            }
+        },
+        "osAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Netmail Application User"
+            }
+        },
         "netmailPassword": {
             "type": "securestring",
             "metadata": {
@@ -43,7 +55,6 @@
         "networkSecurityGroupName": "OpenLDAP-NSG",
         "location":"[resourceGroup().location]",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/",
-        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/ldap.vhd",
         "LDAPInstallCMD": "[concat('sh configure_ldap.sh -r ', parameters('netmailPassword'),' -c ',parameters('netmailPassword'),' -n ',parameters('netmailPassword'))]",
         "count": 2
     },
@@ -125,45 +136,36 @@
             }
         },
         {
-            "type": "Microsoft.Compute/disks",
-            "apiVersion": "2017-03-30",
-            "name": "[concat(variables('vmName'), copyIndex(1),'_OSdisk')]",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "creationData": {
-                    "createOption": "Import",
-                    "sourceUri": "[variables('osDiskVhdUri')]"
-                },
-                "osType": "Linux"
-            },
-            "copy": {
-                "name": "LDAPCopy",
-                "count": "[variables('count')]"
-            }
-        },
-        {
             "apiVersion": "2018-04-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[concat(variables('vmName'),'-',copyIndex(1))]",
             "location": "[variables('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/',variables('nicName'),'-',copyIndex(1))]",
-                "[concat('Microsoft.Compute/disks/',variables('vmName'), copyIndex(1),'_OSdisk')]"
+                "[concat('Microsoft.Network/networkInterfaces/',variables('nicName'),'-',copyIndex(1))]"
             ],
             "properties": {
+                "osProfile": {
+                    "computerName": "[concat(variables('vmName'),'-',copyIndex(1))]",
+                    "adminUsername": "[parameters('osAdminUsername')]",
+                    "adminPassword": "[parameters('osAdminPassword')]"
+                },
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
+                    "imageReference": {
+                        "publisher": "OpenLogic",
+                        "offer": "CentOS",
+                        "sku": "7.5",
+                        "version": "latest"
+                    },
                     "osDisk": {
-                        "osType": "Linux",
-                        "caching": "ReadWrite",
-                        "createOption": "Attach",
+                        "createOption": "fromImage",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(variables('vmName'), copyIndex(1),'_OSdisk'))]",
                             "storageAccountType": "[variables('storageAccountType')]"
                         }
-                    }
+                    },
+                    "dataDisks": []
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -194,7 +196,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh -c \"echo ', parameters('netmailPassword'),' | sudo passwd netmail --stdin\"',' && ', variables('LDAPInstallCMD'), ' -i ', reference(concat(variables('nicName'),'-2')).ipConfigurations[0].properties.privateIPAddress)]",
+                    "commandToExecute": "[concat(variables('LDAPInstallCMD'), ' -i ', reference(concat(variables('nicName'),'-2')).ipConfigurations[0].properties.privateIPAddress)]",
                     "fileUris": [
                         "[concat(variables('scriptsLocationUri'),'configure_ldap.sh')]"
                     ]
@@ -217,7 +219,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh -c \"echo ', parameters('netmailPassword'),' | sudo passwd netmail --stdin\"',' && ', variables('LDAPInstallCMD'), ' -i ', reference(concat(variables('nicName'),'-1')).ipConfigurations[0].properties.privateIPAddress)]",
+                    "commandToExecute": "[concat(variables('LDAPInstallCMD'), ' -i ', reference(concat(variables('nicName'),'-1')).ipConfigurations[0].properties.privateIPAddress)]",
                     "fileUris": [
                         "[concat(variables('scriptsLocationUri'),'configure_ldap.sh')]"
                     ]

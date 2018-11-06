@@ -18,8 +18,7 @@ Param(
     [Parameter()]
     [string]$master_admin_user,
     [Parameter()]
-    [string]$master_admin_password,
-    [Parameter()]
+    [string]$master_admin_password
 )
 
 # Setting up self generated variables

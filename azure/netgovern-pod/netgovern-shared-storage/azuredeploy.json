@@ -29,7 +29,7 @@
             "type": "string",
             "allowedValues": [
                 "Standard_B1ms",
-                "Standard_B2"
+                "Standard_B2s"
             ],
             "metadata": {
                 "description": "The size of the virtual machines used when provisioning"
@@ -139,19 +139,19 @@
             }
         },
         {
-            "type": "Microsoft.Compute/disks",
-            "name": "[concat(variables('vmName'),'-datadisk1')]",
-            "apiVersion": "2017-03-30",
-            "location": "[resourceGroup().location]",
-            "sku": {
-                "name": "Standard_LRS"
+        "type": "Microsoft.Compute/disks",
+        "name": "[concat(variables('vmName'),'-datadisk1')]",
+        "apiVersion": "2017-03-30",
+        "location": "[resourceGroup().location]",
+        "sku": {
+            "name": "Standard_LRS"
+        },
+        "properties": {
+            "creationData": {
+                "createOption": "Empty"
             },
-            "properties": {
-                "creationData": {
-                    "createOption": "Empty"
-                },
-                "diskSizeGB": "[parameters('diskSize')]"
-                }
+            "diskSizeGB": "[parameters('diskSize')]"
+            }
         },
         {
         "apiVersion": "2017-03-30",

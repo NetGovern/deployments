@@ -47,8 +47,6 @@ wget --no-check-certificate \
     https://netgovernpkgs.blob.core.windows.net/download/${RPM}
 
 sudo yum localinstall -y ${RPM}
-sudo systemctl stop netmail
-
 
 #Rename VM to ensure unique names in the cluster
 NEW_HOST_NAME=`curl -s -H Metadata:true "http://169.254.169.254/metadata/instance?api-version=2017-12-01" | jq -r '.compute' | jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" | grep name | awk -F'=' '{ print $2 }'`
@@ -275,6 +273,6 @@ sudo mv /opt/ma/netmail/etc/launcher.d/01-traps.conf /opt/ma/netmail/etc/launche
 sudo mv /opt/ma/netmail/etc/launcher.d/92-autobackup.conf /opt/ma/netmail/etc/launcher.d-available/
 echo "group set \"Netmail Directory\" \"Netmail Directory\"" | sudo tee /opt/ma/netmail/etc/launcher.d/05-openldap.conf
 echo "start -priority 1 slapd -d 0 -f /opt/ma/netmail/etc/slapd.conf -h \"ldapi:/// ldap:/// ldaps:///\"" | sudo tee -a /opt/ma/netmail/etc/launcher.d/05-openldap.conf
-sudo systemctl start netmail
+sudo systemctl restart netmail
 
 exit 0

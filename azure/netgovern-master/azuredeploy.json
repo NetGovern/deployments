@@ -142,7 +142,6 @@
         }
     },
     "variables": {
-        "imageName": "[concat(parameters('vmName'), '-image')]",
         "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "NICName": "[concat(parameters('vmName'), '-NIC')]",
@@ -154,7 +153,6 @@
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
         "storageAccountType" : "Premium_LRS",
-        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Archive_OS.vhd",
         "cmdParameters": [
             "[concat(' -ldap_server ',parameters('ldapServer'))]",
             "[concat(' -ldap_admin_dn ',parameters('ldapAdminDn'))]",
@@ -190,30 +188,12 @@
             }
         },
         {
-            "type": "Microsoft.Compute/images",
-            "apiVersion": "2018-04-01",
-            "name": "[variables('imageName')]",
-            "location": "[resourceGroup().location]",
-            "properties": {
-              "storageProfile": {
-                "osDisk": {
-                  "osType": "Windows",
-                  "osState": "Generalized",
-                  "blobUri": "[variables('osDiskVhdUri')]",
-                  "caching": "ReadWrite",
-                  "storageAccountType": "[variables('storageAccountType')]"
-                }
-              }
-            }
-        },
-        {
             "name": "[parameters('vmName')]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2018-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[variables('NICName')]",
-                "[variables('imageName')]"
+                "[variables('NICName')]"
             ],
             "properties": {
                 "osProfile": {
@@ -229,7 +209,16 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "id": "[resourceId('Microsoft.Compute/images', variables('imageName'))]"
+                        "publisher": "netmail",
+                        "offer": "netmail-search",
+                        "sku": "c2a",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
                     }
                 },
                 "networkProfile": {
@@ -239,9 +228,13 @@
                         }
                     ]
                 }
+            },
+            "plan": {
+                "name": "c2a",
+                "publisher": "netmail",
+                "product": "netmail-search"
             }
         },
-
         {
             "name": "[variables('NICName')]",
             "type": "Microsoft.Network/networkInterfaces",
