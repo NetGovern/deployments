@@ -159,7 +159,7 @@
         }
     },
     "variables": {
-        "baseUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure"
+        "baseUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/azure/multi-tenant"
     },
     "resources": [
         {
@@ -169,7 +169,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-shared-storage/azuredeploy.json')]"
+                    "uri": "[concat(variables('baseUri'),'/pod/shared-storage/azuredeploy.json')]"
                 },
                 "parameters": {
                     "adminUsername": {
@@ -203,7 +203,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-index-cluster/azuredeploy.json')]"
+                    "uri": "[concat(variables('baseUri'),'/pod/index-cluster/azuredeploy.json')]"
                 },
                 "parameters": {
                     "virtualMachineBaseName": {
@@ -234,7 +234,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-ldap-cluster/azuredeploy.json')]"
+                    "uri": "[concat(variables('baseUri'),'/pod/ldap-cluster/azuredeploy.json')]"
                 },
                 "parameters": {
                     "netmailPassword": {
@@ -259,7 +259,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-azure-postgres-db/azuredeploy.json')]"
+                    "uri": "[concat(variables('baseUri'),'/pod/azure-postgres-db/azuredeploy.json')]"
                 },
                 "parameters": {
                     "administratorLogin": {
@@ -281,7 +281,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/netgovern-pod/netgovern-remote-provider/azuredeploy.json')]"
+                    "uri": "[concat(variables('baseUri'),'/pod/remote-provider/azuredeploy.json')]"
                 },
                 "parameters": {
                     "vmName": {
