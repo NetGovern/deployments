@@ -1,0 +1,260 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM Name"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "azureadmin",
+            "metadata": {
+                "description": "OS Admin Username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "OS Admin Password"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B2s",
+                "Standard_B8ms",
+                "Standard_D4s_v3",
+                "Standard_D8s_v3",
+                "Standard_D16s_v3"
+            ],
+            "metadata": {
+                "description": "The size of the virtual machines used when provisioning"
+            }
+        },
+        "windowsOSVersion": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter",
+            "allowedValues": [
+                "2012-R2-Datacenter",
+                "2016-Datacenter"
+            ],
+            "metadata": {
+                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+            }
+        },
+        "dataDiskSizeGB": {
+            "type": "int",
+            "defaultValue": 150,
+            "minValue": 150,
+            "maxValue": 1024,
+            "metadata": {
+                "description": "Size in GB of the new empty data disk attached"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Network Name"
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Name"
+            }
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "NICName": "[concat(parameters('vmName'), '-NIC')]",
+        "NICId": "[resourceId('Microsoft.Network/networkInterfaces/', concat(parameters('vmName'), '-NIC'))]",
+        "PublicIPName": "[concat(parameters('vmName'), '-IP')]",
+        "PublicIPId": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(parameters('vmName'), '-IP'))]",
+        "SecGroupId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(parameters('vmName'), '-NSG'))]",
+        "SecGroupName": "[concat(parameters('vmName'), '-NSG')]",
+        "publicIpAddressType": "Dynamic",
+        "publicIpAddressSku": "Basic",
+        "storageAccountType": "Premium_LRS",
+        "cmdConfigNewDisk": "powershell -ExecutionPolicy Unrestricted -File ConfigureNewDisk.ps1",
+        "cmdInstallNetmail": "powershell -ExecutionPolicy Unrestricted -File InstallNetmail.ps1 -prereqs",
+        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-18cbf8c1-4bc2-4973-b983-01f019ff68cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
+            "name": "[parameters('vmName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2018-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('NICName')]"
+            ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "[parameters('windowsOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "diskSizeGB": "[parameters('dataDiskSizeGB')]",
+                            "lun": 0,
+                            "createOption": "Empty"
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[variables('NICId')]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[variables('NICName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('PublicIPName')]",
+                "[variables('SecGroupName')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[variables('PublicIPId')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[variables('SecGroupId')]"
+                }
+            }
+        },
+        {
+            "name": "[variables('PublicIPName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIpAddressType')]"
+            },
+            "sku": {
+                "name": "[variables('publicIpAddressSku')]"
+            }
+        },
+        {
+            "name": "[variables('SecGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-01-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-rdp",
+                        "properties": {
+                            "priority": 1010,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [],
+                            "destinationApplicationSecurityGroups": [],
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "3389"
+                        }
+                    },
+                    {
+                        "name": "https",
+                        "properties": {
+                            "priority": 1020,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceApplicationSecurityGroups": [],
+                            "destinationApplicationSecurityGroups": [],
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "443"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'),'/extensions')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            ],
+            "tags": {
+                "displayName": "config-remote-provider"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[concat(variables('scriptsLocationUri'),'ConfigureNewDisk.ps1')]",
+                        "[concat(variables('scriptsLocationUri'),'InstallNetmail.ps1')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat(variables('cmdConfigNewDisk'),' & ',variables('cmdInstallNetmail'))]"
+                }
+            }
+        }
+    ]
+}
