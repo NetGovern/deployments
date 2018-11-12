@@ -20,6 +20,17 @@
             "description": "Password for the Virtual Machine."
             }
         },
+        "windowsOSVersion": {
+            "type": "string",
+            "defaultValue": "2012-R2-Datacenter",
+            "allowedValues": [
+                "2012-R2-Datacenter",
+                "2016-Datacenter"
+            ],
+            "metadata": {
+                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+            }
+        },
         "vmSize": {
             "type": "string",
             "allowedValues": [
@@ -62,7 +73,6 @@
         }
     },
     "variables": {
-        "imageName": "[concat(parameters('vmName'), '-image')]",
         "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "NICName": "[concat(parameters('vmName'), '-NIC')]",
@@ -74,13 +84,13 @@
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
         "storageAccountType" : "Premium_LRS",
-        "osDiskVhdUri": "https://canadaeastdisks206.blob.core.windows.net/vhds/Archive_OS.vhd",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/",
         "cmdParameters": [
             "[concat(' -master_server_address ',parameters('masterIPAddress'))]",
             "[concat(' -master_admin_user ',parameters('masterAdminUsername'))]",
             "[concat(' -master_admin_password ',parameters('masterAdminPassword'))]"
         ],
+        "cmdInstallNetmail": "powershell -ExecutionPolicy Unrestricted -File InstallNetmail.ps1 -prereqs",
         "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File ConfigureWorker.ps1"
     },
     "resources": [
@@ -98,46 +108,31 @@
             }
         },
         {
-            "type": "Microsoft.Compute/images",
-            "apiVersion": "2018-04-01",
-            "name": "[variables('imageName')]",
-            "location": "[resourceGroup().location]",
-            "properties": {
-              "storageProfile": {
-                "osDisk": {
-                  "osType": "Windows",
-                  "osState": "Generalized",
-                  "blobUri": "[variables('osDiskVhdUri')]",
-                  "caching": "ReadWrite",
-                  "storageAccountType": "[variables('storageAccountType')]"
-                }
-              }
-            }
-        },
-        {
             "name": "[parameters('vmName')]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2018-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[variables('NICName')]",
-                "[variables('imageName')]"
+                "[variables('NICName')]"
             ],
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
+                    "adminPassword": "[parameters('adminPassword')]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "id": "[resourceId('Microsoft.Compute/images', variables('imageName'))]"
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "[parameters('windowsOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage"
                     }
                 },
                 "networkProfile": {
@@ -149,7 +144,6 @@
                 }
             }
         },
-
         {
             "name": "[variables('NICName')]",
             "type": "Microsoft.Network/networkInterfaces",
@@ -234,11 +228,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'ConfigureWorker.ps1')]"
+                        "[concat(variables('scriptsLocationUri'),'ConfigureWorker.ps1')]",
+                        "[concat(variables('scriptsLocationUri'),'InstallNetmail.ps1')]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2])]"
+                    "commandToExecute": "[concat(variables('cmdInstallNetmail'),' && ',variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2])]"
                 }
             }
         }

@@ -20,6 +20,17 @@
             "description": "Password for the Virtual Machine."
             }
         },
+        "windowsOSVersion": {
+            "type": "string",
+            "defaultValue": "2012-R2-Datacenter",
+            "allowedValues": [
+                "2012-R2-Datacenter",
+                "2016-Datacenter"
+            ],
+            "metadata": {
+                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+            }
+        },
         "vmSize": {
             "type": "string",
             "allowedValues": [
@@ -171,6 +182,7 @@
             "[concat(' -smtp_server_port ',parameters('smtpPort'))]"
         ],
         "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File MasterSetupWizard.ps1",
+        "cmdInstallNetmail": "powershell -ExecutionPolicy Unrestricted -File InstallNetmail.ps1 -prereqs",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
     },
     "resources": [
@@ -199,26 +211,20 @@
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
+                    "adminPassword": "[parameters('adminPassword')]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "netmail",
-                        "offer": "netmail-search",
-                        "sku": "c2a",
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "[parameters('windowsOSVersion')]",
                         "version": "latest"
                     },
                     "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "[variables('storageAccountType')]"
-                        }
+                        "createOption": "FromImage"
                     }
                 },
                 "networkProfile": {
@@ -228,11 +234,6 @@
                         }
                     ]
                 }
-            },
-            "plan": {
-                "name": "c2a",
-                "publisher": "netmail",
-                "product": "netmail-search"
             }
         },
         {
@@ -337,11 +338,12 @@
                         "[concat(variables('scriptsLocationUri'),'MasterSetupWizard.ps1')]",
                         "[concat(variables('scriptsLocationUri'),'basedata.ps1')]",
                         "[concat(variables('scriptsLocationUri'),'ConfigureDP.ps1')]",
-                        "[concat(variables('scriptsLocationUri'),'ngfunctions.ps1')]"
+                        "[concat(variables('scriptsLocationUri'),'ngfunctions.ps1')]",
+                        "[concat(variables('scriptsLocationUri'),'InstallNetmail.ps1')]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13],variables('cmdParameters')[14])]"
+                    "commandToExecute": "[concat(variables('cmdInstallNetmail'),' && ',variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13],variables('cmdParameters')[14])]"
                 }
             }
         }

@@ -23,7 +23,7 @@
         },
         "windowsOSVersion": {
             "type": "string",
-            "defaultValue": "2016-Datacenter",
+            "defaultValue": "2012-R2-Datacenter",
             "allowedValues": [
                 "2012-R2-Datacenter",
                 "2016-Datacenter"
@@ -54,7 +54,7 @@
             "type": "string",
             "allowedValues": [
                 "Standard_B2ms",
-                "Standard_B2s"
+                "Standard_D2s_v3"
             ],
             "metadata": {
                 "description": "The size of the virtual machines used when provisioning"
