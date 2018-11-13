@@ -214,11 +214,5 @@
                 "count": "[parameters('count')]"
             }
         }
-    ],
-    "outputs": {
-        "zookeeperIpAddress": {
-            "type": "string",
-            "value": "reference(concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NIC')).ipConfigurations[0].properties.privateIPAddress)"
-        }
-    }
+    ]
 }
