@@ -2,10 +2,16 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "StorageServerAdminUsername": {
+      "windowsServerAdminUsername": {
         "value": null
       },
-      "StorageServerAdminPassword": {
+      "windowsServerAdminPassword": {
+        "value": null
+      },
+      "linuxOSAdminUsername": {
+        "value": null
+      },
+      "linuxOSAdminPassword": {
         "value": null
       },
       "StorageServerWindowsOSVersion": {
@@ -37,12 +43,6 @@
       },
       "remoteProviderVmName": {
         "value": "RemoteProvider"
-      },
-      "remoteProviderAdminUsername": {
-        "value": null
-      },
-      "remoteProviderAdminPassword": {
-        "value": null
       },
       "remoteProviderVmSize": {
         "value": null

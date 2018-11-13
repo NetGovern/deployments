@@ -2,16 +2,28 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "StorageServerAdminUsername": {
+        "windowsServerAdminUsername": {
             "type": "string",
             "metadata": {
-                "description": "Username for the Storage Server Virtual Machine"
+                "description": "Username for the Windows Servers to be deployed in your POD"
             }
         },
-        "StorageServerAdminPassword": {
+        "windowsServerAdminPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Password for the Storage Server Virtual Machine"
+                "description": "Password for the Windows Servers to be deployed in your POD"
+            }
+        },
+        "linuxOSAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the linux servers account with sudo rights to be deployed in your POD"
+            }
+        },
+        "linuxOSAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the linux servers account with sudo rights to be deployed in your POD"
             }
         },
         "StorageServerWindowsOSVersion": {
@@ -104,18 +116,6 @@
                 "description": "Virtual Machine Name for the Remote Provider server"
             }
         },
-        "remoteProviderAdminUsername": {
-            "type": "string",
-            "metadata": {
-                "description": "Username for the Virtual Machine."
-            }
-        },
-        "remoteProviderAdminPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for the Virtual Machine."
-            }
-        },
         "remoteProviderVmSize": {
             "type": "string",
             "allowedValues": [
@@ -173,10 +173,10 @@
                 },
                 "parameters": {
                     "adminUsername": {
-                        "value": "[parameters('StorageServerAdminUsername')]"
+                        "value": "[parameters('windowsServerAdminUsername')]"
                     },
                     "adminPassword": {
-                        "value": "[parameters('StorageServerAdminPassword')]"
+                        "value": "[parameters('windowsServerAdminPassword')]"
                     },
                     "windowsOSVersion": {
                         "value": "[parameters('StorageServerWindowsOSVersion')]"
@@ -209,6 +209,12 @@
                     "virtualMachineBaseName": {
                         "value": "[parameters('indexVirtualMachineBaseName')]"
                     },
+                    "osAdminUsername": {
+                        "value": "[parameters('linuxOsAdminUsername')]"
+                    },
+                    "osAdminPassword": {
+                        "value": "[parameters('linuxOSAdminPassword')]"
+                    },
                     "virtualMachineSize": {
                         "value": "[parameters('indexVirtualMachineSize')]"
                     },
@@ -239,6 +245,12 @@
                 "parameters": {
                     "netmailPassword": {
                         "value": "[parameters('ldapClusterNetmailUserPassword')]"
+                    },
+                    "osAdminUsername": {
+                        "value": "[parameters('linuxOsAdminUsername')]"
+                    },
+                    "osAdminPassword": {
+                        "value": "[parameters('linuxOSAdminPassword')]"
                     },
                     "vmSize": {
                         "value": "[parameters('ldapClusterVmSize')]"
@@ -288,10 +300,13 @@
                         "value": "[parameters('remoteProviderVmName')]"
                     },
                     "adminUsername": {
-                        "value": "[parameters('remoteProviderAdminUsername')]"
+                        "value": "[parameters('windowsServerAdminUsername')]"
                     },
                     "adminPassword": {
-                        "value": "[parameters('remoteProviderAdminPassword')]"
+                        "value": "[parameters('windowsServerAdminPassword')]"
+                    },
+                    "windowsOSVersion" : {
+                        "value": "2012-R2-Datacenter"
                     },
                     "ldapServer": {
                         "value": "[reference('linkedTemplateLDAP').outputs.ldapIpAddress.value]"

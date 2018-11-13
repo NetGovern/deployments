@@ -5,6 +5,12 @@
       "virtualMachineBaseName": {
         "value": null
       },
+      "osAdminUsername": {
+        "value": null
+      },
+      "osAdminPassword": {
+        "value": null
+      },
       "virtualMachineSize": {
         "value": "Standard_B2s"
       },

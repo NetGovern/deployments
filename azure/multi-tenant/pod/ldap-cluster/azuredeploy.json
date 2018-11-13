@@ -5,13 +5,13 @@
         "osAdminUsername": {
             "type": "string",
             "metadata": {
-                "description": "Virtual Network Name"
+                "description": "User name for the OS admin account with sudo rights to be provisioned"
             }
         },
         "osAdminPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Password for the Netmail Application User"
+                "description": "Password for the OS admin account"
             }
         },
         "netmailPassword": {
