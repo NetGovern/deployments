@@ -86,6 +86,7 @@ Param(
 )
 
 Set-Location $PSScriptRoot
+$env:NETMAIL_BASE_DIR = "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin"
 
 #Source functions and config templates
 . .\ngfunctions.ps1
