@@ -24,7 +24,9 @@ Param(
     [Parameter()]
     [string]$smtp_server,
     [Parameter()]
-    [string]$smtp_server_port
+    [string]$smtp_server_port,
+    [Parameter()]
+    [string]$tenant_id
 )
 
 $rp_admin_secure_string_password = ConvertTo-SecureString $rp_admin_password -AsPlainText -Force
