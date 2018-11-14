@@ -106,3 +106,6 @@ If ($Timer -ge $TimerLimit) {
     Write-Output "Netmail installation (install.bat) timed out ($TimerLimit seconds)"
     Exit 1
 }
+
+Start-Sleep 30
+Restart-Service -Name NetmailLauncherService
