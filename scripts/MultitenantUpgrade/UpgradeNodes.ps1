@@ -38,7 +38,7 @@ $install_msi = {
         )
         if ( $PSVersionTable.PSVersion.Major -eq 4) {
             [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
-            [System.IO.Compression.ZipFile]::ExtractToDirectory("$path_to_zip", "$target_dir")
+            [System.IO.Compression.ZipFile]::ExtractToDirectory("$path_to_zip", "$target_dir", $true)
         }
         if ( $PSVersionTable.PSVersion.Major -ge 5) {
             Expand-Archive -LiteralPath "$path_to_zip" -DestinationPath "$target_dir"
@@ -183,6 +183,7 @@ $info_hash['dp'].psobject.Properties | foreach-object {
         }
     }
 }
+$archive_nodes = @()
 $info_hash['archive'].psobject.Properties | foreach-object {
     $node_ip = $_.Name
     $_.Value.psobject.properties | ForEach-Object {
@@ -197,14 +198,16 @@ $info_hash['archive'].psobject.Properties | foreach-object {
             $job_name = "JobAt$($node_ip)-$(Get-Date -f "MMddhhmmss")"
             Write-Output "Starting Archive upgrade job at $node_ip"
             (Invoke-Command -ScriptBlock $install_msi -ComputerName $node_ip -Credential $admin_credentials -AsJob -JobName $job_name) | Out-Null
-            if ($?) { $jobs += $job_name }
+            if ($?) { 
+                $jobs += $job_name
+                $archive_nodes += $node_ip
+            }
             else { Write-output "Job could not be launched at $node_ip, please run upgrade manually" }
         }
     }
 }
 
 #Checking jobs status
-$upgraded_archive_nodes = @()
 $Timer = 0
 $TimerLimit = 3600
 $TimerIncrement = 10
@@ -227,7 +230,6 @@ while (($jobs_left -gt 0) -And ($Timer -lt $TimerLimit)) {
     ForEach ($job_name in $jobs) {
         $job_state = (get-job -Name $job_name).JobStateInfo.State
         if ($job_state -eq "Completed") {
-            $upgraded_archive_nodes += (get-job -Name $job_name).Location
             $jobs_left -= 1 
         }
         get-job -Name $job_name | Receive-Job | Out-File -Append "$($job_name).txt"
@@ -240,7 +242,7 @@ If ($Timer -ge $TimerLimit) {
     Write-Output "All Remote and background jobs finished"
 }
 
-foreach ($archive_node_to_be_started in $upgraded_archive_nodes) {
+foreach ($archive_node_to_be_started in $archive_nodes) {
     Write-Output "Starting Launcher @ $archive_node_to_be_started"
     try {
         Invoke-Command -ScriptBlock { Start-Service NetmailLauncherService } -ComputerName $archive_node_to_be_started -Credential $admin_credentials
