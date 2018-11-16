@@ -68,6 +68,20 @@
     },
     "resources": [
         {
+            "condition": "[equals(parameters('fullPodDeployment'), 'no')]",
+            "apiVersion": "2018-02-01",
+            "name": "pid-18cbf8c1-4bc2-4973-b983-01f019ff68cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
             "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1))]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2018-04-01",
@@ -187,7 +201,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && upgrade_rpms.sh -v 6.2.1.844 -i')]",
+                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && sh upgrade_rpms.sh -v 6.2.1.844 -i')]",
                     "fileUris": [
                         "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]",
                         "[concat(variables('scriptsLocationUri'),'upgrade_rpms.sh')]"
