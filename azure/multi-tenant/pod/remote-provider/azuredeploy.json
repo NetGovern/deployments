@@ -21,17 +21,6 @@
             "description": "Password for the Virtual Machine."
             }
         },
-        "windowsOSVersion": {
-            "type": "string",
-            "defaultValue": "2012-R2-Datacenter",
-            "allowedValues": [
-                "2012-R2-Datacenter",
-                "2016-Datacenter"
-            ],
-            "metadata": {
-                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
-            }
-        },
         "ldapServer": {
             "type": "string",
             "metadata": {
@@ -137,9 +126,9 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "[parameters('windowsOSVersion')]",
+                        "publisher": "netmail",
+                        "offer": "netmail-search",
+                        "sku": "c2a",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -153,6 +142,11 @@
                         }
                     ]
                 }
+            },
+            "plan": {
+                "name": "c2a",
+                "publisher": "netmail",
+                "product": "netmail-search"
             }
         },
         {
