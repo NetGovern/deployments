@@ -338,6 +338,9 @@
                     },
                     "subnetName": {
                         "value": "[parameters('subnetName')]"
+                    },
+                    "fullPodDeployment": {
+                        "value": "yes"
                     }
                 }
             },

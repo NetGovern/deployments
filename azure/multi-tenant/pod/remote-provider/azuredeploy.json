@@ -71,6 +71,15 @@
             "metadata": {
                 "description": "Subnet Name"
             }
+        },
+        "fullPodDeployment": {
+            "type": "string",
+            "defaultValue": "no",
+            "allowedValues": [
+                "no",
+                "Do not change this option - Please select \"no\"",
+                "yes"
+            ]
         }
     },
     "variables": {
@@ -95,6 +104,20 @@
         "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File NewRemoteProvider.ps1"
     },
     "resources": [
+        {
+            "condition": "[equals(parameters('fullPodDeployment'), 'no')]",
+            "apiVersion": "2018-02-01",
+            "name": "pid-18cbf8c1-4bc2-4973-b983-01f019ff68cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
         {
             "name": "[parameters('vmName')]",
             "type": "Microsoft.Compute/virtualMachines",

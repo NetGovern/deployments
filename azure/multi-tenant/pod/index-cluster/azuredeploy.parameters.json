@@ -25,6 +25,9 @@
       },
       "dataDiskSizeGB": {
         "value": 150
+      },
+      "fullPodDeployment": {
+        "value": "no"
       }
     }
   }

@@ -22,6 +22,9 @@
         },
         "postgresPassword": {
             "value": null
+        },
+        "fullPodDeployment": {
+            "value": "no"
         }
     }
 }

@@ -20,6 +20,15 @@
             "metadata": {
                 "description": "Postgres Server Base Name. It has to be unique, a random string will be appended"
             }
+        },
+        "fullPodDeployment": {
+            "type": "string",
+            "defaultValue": "no",
+            "allowedValues": [
+                "no",
+                "Do not change this option - Please select \"no\"",
+                "yes"
+            ]
         }
     },
     "variables": {

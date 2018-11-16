@@ -10,6 +10,9 @@
         },
         "serverBaseName": {
             "value": "Please choose a unique name"
+        },
+        "fullPodDeployment": {
+            "value": "no"
         }
     }
 }

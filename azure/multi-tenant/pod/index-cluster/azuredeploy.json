@@ -47,6 +47,15 @@
             "defaultValue": 150,
             "minValue": 150,
             "maxValue": 1024
+        },
+        "fullPodDeployment": {
+            "type": "string",
+            "defaultValue": "no",
+            "allowedValues": [
+                "no",
+                "Do not change this option - Please select \"no\"",
+                "yes"
+            ]
         }
     },
     "variables": {

@@ -28,6 +28,9 @@
         },
         "subnetName": {
             "value": null
+        },
+        "fullPodDeployment": {
+            "value": "no"
         }
     }
 }

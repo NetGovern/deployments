@@ -41,6 +41,15 @@
             "metadata": {
                 "description": "Subnet Name"
             }
+        },
+        "fullPodDeployment": {
+            "type": "string",
+            "defaultValue": "no",
+            "allowedValues": [
+                "no",
+                "Do not change this option - Please select \"no\"",
+                "yes"
+            ]
         }
     },
     "variables": {
