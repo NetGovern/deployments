@@ -14,9 +14,6 @@
       "vmSize": {
         "value": null
       },
-      "windowsOSVersion": {
-        "value": "2016-Datacenter"
-      },
       "dataDiskSizeGB": {
         "value": "150"
       },

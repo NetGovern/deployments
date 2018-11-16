@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "vmName": {
-        "value": "RemoteProvider"
+        "value": null
       },
       "adminUsername": {
         "value": null

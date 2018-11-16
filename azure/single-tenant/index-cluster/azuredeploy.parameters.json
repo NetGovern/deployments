@@ -12,7 +12,7 @@
         "value": null
     },
       "virtualMachineSize": {
-        "value": "Standard_B2s"
+        "value": null
       },
       "count": {
         "value": 1

@@ -35,17 +35,6 @@
                 "description": "The size of the virtual machines used when provisioning"
             }
         },
-        "windowsOSVersion": {
-            "type": "string",
-            "defaultValue": "2016-Datacenter",
-            "allowedValues": [
-                "2012-R2-Datacenter",
-                "2016-Datacenter"
-            ],
-            "metadata": {
-                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
-            }
-        },
         "dataDiskSizeGB": {
             "type": "int",
             "defaultValue": 150,
@@ -80,8 +69,7 @@
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
         "storageAccountType": "Premium_LRS",
-        "cmdConfigNewDisk": "powershell -ExecutionPolicy Unrestricted -File InitializeNewDataDisk.ps1 -DiskLabel DataDisk1",
-        "cmdInstallNetmail": "powershell -ExecutionPolicy Unrestricted -File InstallNetmail.ps1 -prereqs",
+        "cmdInitializeNewDataDisk": "powershell -ExecutionPolicy Unrestricted -File InitializeNewDataDisk.ps1 -DiskLabel DataDisk1",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
     },
     "resources": [
@@ -110,19 +98,16 @@
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
+                    "adminPassword": "[parameters('adminPassword')]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "[parameters('windowsOSVersion')]",
+                        "publisher": "netmail",
+                        "offer": "netmail-search",
+                        "sku": "c2a",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -146,6 +131,11 @@
                         }
                     ]
                 }
+            },
+            "plan": {
+                "name": "c2a",
+                "publisher": "netmail",
+                "product": "netmail-search"
             }
         },
         {
@@ -238,7 +228,7 @@
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
             ],
             "tags": {
-                "displayName": "config-remote-provider"
+                "displayName": "InitializeNewDisk"
             },
             "properties": {
                 "publisher": "Microsoft.Compute",
@@ -247,12 +237,11 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'InitializeNewDataDisk.ps1')]",
-                        "[concat(variables('scriptsLocationUri'),'InstallNetmail.ps1')]"
+                        "[concat(variables('scriptsLocationUri'),'InitializeNewDataDisk.ps1')]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdConfigNewDisk'),' & ',variables('cmdInstallNetmail'))]"
+                    "commandToExecute": "[variables('cmdInitializeNewDataDisk')]"
                 }
             }
         }

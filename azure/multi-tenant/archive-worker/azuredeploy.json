@@ -20,17 +20,6 @@
             "description": "Password for the Virtual Machine."
             }
         },
-        "windowsOSVersion": {
-            "type": "string",
-            "defaultValue": "2012-R2-Datacenter",
-            "allowedValues": [
-                "2012-R2-Datacenter",
-                "2016-Datacenter"
-            ],
-            "metadata": {
-                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
-            }
-        },
         "vmSize": {
             "type": "string",
             "allowedValues": [
@@ -90,8 +79,7 @@
             "[concat(' -master_admin_user ',parameters('masterAdminUsername'))]",
             "[concat(' -master_admin_password ',parameters('masterAdminPassword'))]"
         ],
-        "cmdInstallNetmail": "powershell -ExecutionPolicy Unrestricted -File InstallNetmail.ps1 -prereqs",
-        "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File ConfigureWorker.ps1"
+        "cmdConfigureWorker": "powershell -ExecutionPolicy Unrestricted -File ConfigureWorker.ps1"
     },
     "resources": [
         {
@@ -126,9 +114,9 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "[parameters('windowsOSVersion')]",
+                        "publisher": "netmail",
+                        "offer": "netmail-search",
+                        "sku": "c2a",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -142,6 +130,11 @@
                         }
                     ]
                 }
+            },
+            "plan": {
+                "name": "c2a",
+                "publisher": "netmail",
+                "product": "netmail-search"
             }
         },
         {
@@ -228,12 +221,11 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'ConfigureWorker.ps1')]",
-                        "[concat(variables('scriptsLocationUri'),'InstallNetmail.ps1')]"
+                        "[concat(variables('scriptsLocationUri'),'ConfigureWorker.ps1')]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdInstallNetmail'),' && ',variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2])]"
+                    "commandToExecute": "[concat(variables('cmdConfigureWorker'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2])]"
                 }
             }
         }

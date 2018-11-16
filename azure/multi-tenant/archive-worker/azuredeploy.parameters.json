@@ -14,6 +14,15 @@
         "vmSize": {
             "value": null
         },
+        "masterAdminUsername": {
+            "value": null
+        },
+        "masterAdminPassword": {
+            "value": null
+        },
+        "masterIPAddress": {
+            "value": null
+        },
         "virtualNetworkName": {
             "value": null
         },

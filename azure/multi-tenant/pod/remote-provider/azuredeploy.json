@@ -89,8 +89,7 @@
             "[concat(' -multitennipe_password ',parameters('multitenantnipeLdapPassword'))]",
             "[concat(' -zookeeper_url ',parameters('zookeeperUrl'))]"
         ],
-        "cmdInstallNetmail": "powershell -ExecutionPolicy Unrestricted -File InstallNetmail.ps1 -prereqs",
-        "cmdPowershell": "powershell -ExecutionPolicy Unrestricted -File NewRemoteProvider.ps1"
+        "cmdNewRemoteProvider": "powershell -ExecutionPolicy Unrestricted -File NewRemoteProvider.ps1"
     },
     "resources": [
         {
@@ -233,12 +232,11 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'NewRemoteProvider.ps1')]",
-                        "[concat(variables('scriptsLocationUri'),'InstallNetmail.ps1')]"
+                        "[concat(variables('scriptsLocationUri'),'NewRemoteProvider.ps1')]"
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdInstallNetmail'),' && ',variables('cmdPowershell'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],' && Powershell -ExecutionPolicy Unrestricted -Command \"Restart-Computer\"')]"
+                    "commandToExecute": "[concat(variables('cmdNewRemoteProvider'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],' && Powershell -ExecutionPolicy Unrestricted -Command \"Restart-Computer\"')]"
                 }
             }
         }
