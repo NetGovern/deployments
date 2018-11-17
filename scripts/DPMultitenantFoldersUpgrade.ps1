@@ -9,7 +9,7 @@ $backup_folder = "bkp_dp_$(get-date -f yymmddhhmmss)"
 Write-Output "Backing up existing DP folders to $($env:NETMAIL_BASE_DIR)\..\$backup_folder"
 Write-Output "Creating folder $backup_folder"
 (New-Item -Path "$($env:NETMAIL_BASE_DIR)\.." -Name "$backup_folder" -ItemType "directory") | Out-Null
-$dp_folders = (Get-ChildItem -Path "$($env:NETMAIL_BASE_DIR)\.." -Directory | Where-Object {$_.FullName -match "RemoteProvider_"})
+$dp_folders = (Get-ChildItem -Path "$($env:NETMAIL_BASE_DIR)\.." -Directory | Where-Object {$_.FullName -match "RemoteProvider"})
 Write-Output "Copying dp folders to bkp directory"
 foreach ($folder in $dp_folders) { 
     Copy-Item -Path "$($folder.FullName)" -Recurse -Destination "$($env:NETMAIL_BASE_DIR)\..\bkp_dp_$current_version_dp"
