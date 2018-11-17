@@ -38,7 +38,7 @@ $install_msi = {
         )
         if ( $PSVersionTable.PSVersion.Major -eq 4) {
             [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
-            [System.IO.Compression.ZipFile]::ExtractToDirectory("$path_to_zip", "$target_dir", $true)
+            [System.IO.Compression.ZipFile]::ExtractToDirectory("$path_to_zip", "$target_dir")
         }
         if ( $PSVersionTable.PSVersion.Major -ge 5) {
             Expand-Archive -LiteralPath "$path_to_zip" -DestinationPath "$target_dir"
