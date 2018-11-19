@@ -47,15 +47,6 @@
       "remoteProviderVmSize": {
         "value": null
       },
-      "postgresAdministratorLogin": {
-        "value": null
-      },
-      "postgresAdministratorLoginPassword": {
-        "value": null
-      },
-      "postgresServerBaseName": {
-        "value": "dbpod"
-      },
       "virtualNetworkName": {
         "value": null
       },

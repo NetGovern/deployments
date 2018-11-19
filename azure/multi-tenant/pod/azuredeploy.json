@@ -93,20 +93,20 @@
                 "description": "Size of the data disk to be attached to VMs"
             }
         },
-        "ldapClusterNetmailUserPassword": {
+        "dbLdapNetmailUserPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Password for the Netmail Application User in LDAP Cluster Virtual Machines"
+                "description": "Password for the Netmail Application User in the LDAP Virtual Machine"
             }
         },
-        "ldapClusterVmSize": {
+        "dbLdapVmSize": {
             "type": "string",
             "allowedValues": [
                 "Standard_B1ms",
                 "Standard_B2s"
             ],
             "metadata": {
-                "description": "The size of the LDAP Cluster Virtual Machines"
+                "description": "The size of the LDAP Virtual Machine"
             }
         },
         "remoteProviderVmName": {
@@ -124,25 +124,6 @@
             ],
             "metadata": {
                 "description": "The size of the virtual machines for the Remote Provider server"
-            }
-        },
-        "postgresAdministratorLogin": {
-            "type": "string",
-            "metadata": {
-                "description": "Username for the Virtual Postgres server."
-            }
-        },
-        "postgresAdministratorLoginPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for the Virtual Machine."
-            }
-        },
-        "postgresServerBaseName": {
-            "type": "string",
-            "defaultValue": "dbpod",
-            "metadata": {
-                "description": "Postgres Server Base Name. A unique string will be appended"
             }
         },
         "virtualNetworkName": {
@@ -248,16 +229,16 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "linkedTemplateLDAP",
+            "name": "linkedTemplateDBLDAP",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/pod/ldap-cluster/azuredeploy.json')]"
+                    "uri": "[concat(variables('baseUri'),'/pod/ldap-postgres-single-vm/azuredeploy.json')]"
                 },
                 "parameters": {
                     "netmailPassword": {
-                        "value": "[parameters('ldapClusterNetmailUserPassword')]"
+                        "value": "[parameters('dbLdapNetmailUserPassword')]"
                     },
                     "osAdminUsername": {
                         "value": "[parameters('linuxOsAdminUsername')]"
@@ -266,35 +247,13 @@
                         "value": "[parameters('linuxOSAdminPassword')]"
                     },
                     "vmSize": {
-                        "value": "[parameters('ldapClusterVmSize')]"
+                        "value": "[parameters('dbLdapVmSize')]"
                     },
                     "virtualNetworkName": {
                         "value": "[parameters('virtualNetworkName')]"
                     },
                     "subnetName": {
                         "value": "[parameters('subnetName')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "linkedTemplatePostgresDB",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('baseUri'),'/pod/azure-postgres-db/azuredeploy.json')]"
-                },
-                "parameters": {
-                    "administratorLogin": {
-                        "value": "[parameters('postgresAdministratorLogin')]"
-                    },
-                    "administratorLoginPassword": {
-                        "value": "[parameters('postgresAdministratorLoginPassword')]"
-                    },
-                    "serverBaseName": {
-                        "value": "[parameters('postgresServerBaseName')]"
                     }
                 }
             }
@@ -318,14 +277,11 @@
                     "adminPassword": {
                         "value": "[parameters('windowsServerAdminPassword')]"
                     },
-                    "windowsOSVersion" : {
-                        "value": "2012-R2-Datacenter"
-                    },
                     "ldapServer": {
-                        "value": "[reference('linkedTemplateLDAP').outputs.ldapIpAddress.value]"
+                        "value": "[reference('linkedTemplateDBLDAP').outputs.ldapIpAddress.value]"
                     },
                     "multitenantnipeLdapPassword": {
-                        "value": "[parameters('ldapClusterNetmailUserPassword')]"
+                        "value": "[parameters('dbLdapNetmailUserPassword')]"
                     },
                     "zookeeperUrl": {
                         "value": "[concat(reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value,':32000')]"
@@ -346,7 +302,7 @@
             },
             "dependsOn": [
                 "linkedTemplateIndex",
-                "linkedTemplateLDAP"
+                "linkedTemplateDBLDAP"
             ]
         }
     ]
