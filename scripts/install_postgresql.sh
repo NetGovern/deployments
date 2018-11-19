@@ -28,7 +28,7 @@ fi
 yum install -y \
     epel-release
 yum install -y \
-     postgresql-server postgresql-contrib
+     postgresql-server postgresql-contrib firewalld
 
 # Configure Locale to UTF8 
 sudo localectl set-locale LANG=en_US.UTF-8
@@ -51,11 +51,19 @@ sudo -u postgres -i psql -d template1 -c "ALTER USER postgres WITH PASSWORD '${P
 echo "Allowing ${CIDR}"
 echo "host   all   all   ${CIDR}   md5" | sudo tee -a /var/lib/pgsql/data/pg_hba.conf
 
-echo "Allowing ${CIDR} for Postgres port 5432"
-firewall-cmd --permanent --add-rich-rule='
-    rule family=ipv4
-    source address='${CIDR}'
-    port port=5432 protocol=tcp accept'
+#Checking Firewalld State and Status
+FWSTATE=`systemctl is-enabled firewalld`
+if [ "${FWSTATE}" != "enabled" ]; then
+    systemctl enable firewalld
+fi
+
+FWSTATUS=`systemctl is-active firewalld`
+if [ "${FWSTATUS}" != "active" ]; then
+    systemctl start firewalld
+fi
+
+echo "Opening Postgres port 5432"
+firewall-cmd --permanent --add-port=5432/tcp
 
 systemctl reload firewalld
 systemctl restart postgresql

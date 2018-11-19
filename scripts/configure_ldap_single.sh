@@ -32,7 +32,7 @@ fi
 
 # PREPARE PLATFORM
 sudo yum install epel-release -y
-sudo yum install -y gettext sshpass jq cifs-utils gdb bind-utils wget screen net-tools sudo telnet nmap tcpdump rsync python python-libs
+sudo yum install -y gettext sshpass jq cifs-utils gdb bind-utils wget screen net-tools sudo telnet nmap tcpdump rsync python python-libs firewalld
 
 sudo useradd netmail -m
 echo ${ADMIN_PASSWD} | sudo passwd netmail --stdin
@@ -232,5 +232,23 @@ sudo mv /opt/ma/netmail/etc/launcher.d/92-autobackup.conf /opt/ma/netmail/etc/la
 echo "group set \"Netmail Directory\" \"Netmail Directory\"" | sudo tee /opt/ma/netmail/etc/launcher.d/05-openldap.conf
 echo "start -priority 1 slapd -d 0 -f /opt/ma/netmail/etc/slapd.conf -h \"ldapi:/// ldap:/// ldaps:///\"" | sudo tee -a /opt/ma/netmail/etc/launcher.d/05-openldap.conf
 sudo systemctl restart netmail
+
+echo "Configuring Firewall"
+#Checking Firewalld State and Status
+FWSTATE=`systemctl is-enabled firewalld`
+if [ "${FWSTATE}" != "enabled" ]; then
+    systemctl enable firewalld
+fi
+
+FWSTATUS=`systemctl is-active firewalld`
+if [ "${FWSTATUS}" != "active" ]; then
+    systemctl start firewalld
+fi
+
+echo "Opening ldap ports 389 and 636"
+firewall-cmd --permanent --add-port=389/tcp
+firewall-cmd --permanent --add-port=636/tcp
+
+systemctl reload firewalld
 
 exit 0
