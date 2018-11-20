@@ -209,6 +209,28 @@
                 ]
             }
         }
-      }
+      },
+      {
+        "apiVersion": "2015-06-15",
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(variables('vmName'),'/extensions')]",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+        ],
+        "tags": {
+            "displayName": "config-shared-storage"
+        },
+        "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {},
+            "protectedSettings": {
+                "commandToExecute": "Powershell -ExecutionPolicy Unrestricted -Command \"Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True\""
+            }
+        }
+    }
     ]
   }

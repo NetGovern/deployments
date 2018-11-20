@@ -60,3 +60,6 @@ $netmail_properties = $netmail_properties.replace("resource=https://localhost/in
 $netmail_properties = $netmail_properties.replace("clusterscheme=https", "$resource")
 $netmail_properties += "`ntrustedIps=All" 
 $netmail_properties | Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\netmail.properties"
+
+# Allow SMB traffic
+Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True

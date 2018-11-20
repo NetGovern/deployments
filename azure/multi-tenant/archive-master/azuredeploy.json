@@ -112,13 +112,6 @@
                 "description": "smtp server address for notifications"
             }
         },
-        "smtpPort": {
-            "type": "string",
-            "defaultValue": "25",
-            "metadata": {
-                "description": "smtp server port for notifications"
-            }
-        },
         "remoteProviderIpAddress": {
             "type": "string",
             "defaultValue": "0.0.0.0",
@@ -167,8 +160,7 @@
             "[concat(' -remote_provider_ip_address ',parameters('remoteProviderIpAddress'))]",
             "[concat(' -remote_provider_admin_user ',parameters('remoteProviderAdminUser'))]",
             "[concat(' -remote_provider_password ',parameters('remoteProviderPassword'))]",
-            "[concat(' -smtp_server ',parameters('smtpAddress'))]",
-            "[concat(' -smtp_server_port ',parameters('smtpPort'))]"
+            "[concat(' -smtp_server ',parameters('smtpAddress'))]"
         ],
         "cmdMasterSetupWizard": "powershell -ExecutionPolicy Unrestricted -File MasterSetupWizard.ps1",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"

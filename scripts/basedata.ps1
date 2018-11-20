@@ -73,20 +73,20 @@ $clusterconfig_xml = @"
       <PRMS><![CDATA[<PRMS><CONNECTION DN="cn=eclients,cn=system,o=[tenant_id],o=netmail" IP="[ldap_server]" PORT="389" PASSWORD="[eclients_password_encrypted]" SSL="false" ECLIENTSDN="cn=eclients,cn=system,o=[tenant_id],o=netmail" /><LDAPTREE ROOT="cn=archiving,o=[tenant_id],o=netmail"/></PRMS>]]></PRMS>
     </iConf>
     <admin>
-      <user ID="[exchange_user]" EMAIL="[exchange_user]"/>
+      <user ID="[o365_user]" EMAIL="[o365_user]"/>
       <PO>
         <IConnects>
-          <IConnect ID="1" IP="[exchange_server]" PORT="1677" PROGID="TMA.TMAGWOAPI.GWSession" PATH="GWOOAPI"/>
-          <IConnect ID="2" IP="[exchange_server]" PORT="25" PROGID="TMAGWSoapAPI.ModelLoader" PATH="TMAGWSoapAPI" SSL = "true"/>
-          <IConnect ID="3" IP="[exchange_server]" PORT="1677" PROGID="TMA.MAEWSAPI.EWSSession" PATH="MAEWSAPI" VERSION="Exchange2010_SP1"/>
-          <IConnect ID="4" IP="[exchange_server]" PORT="1677" PROGID="TMA.TMAGWOAPI.GWSession2" PATH="TMAGWArchiveOAPI"/>
-          <IConnect ID="5" IP="[exchange_server]" PORT="1677" PROGID="TMA.TMAGWXML35.GWSession" PATH="TMAGWXML35"/>
-          <IConnect ID="6" IP="[exchange_server]" PORT="1677" PROGID="TMA.TMAPstArchiveAPI.PstArchiveSession" PATH="TMAPstArchiveAPI"/>
-          <IConnect ID="7" IP="[exchange_server]" PORT="1677" PROGID="TMA.TMAGWOAPI.GWSession" PATH="GWOOAPI"/>
-          <IConnect ID="8" IP="[exchange_server]" PORT="1677" PROGID="Netmail.Connectors.Amazon.WorkMail" PATH="AmazonWorkMail"/>
-          <IConnect ID="9" IP="[exchange_server]" PORT="1677" PROGID="Netmail.Connectors.Generic.EML" PATH="ImportConnector"/>
+          <IConnect ID="1" IP="[smtp_server]" PORT="1677" PROGID="TMA.TMAGWOAPI.GWSession" PATH="GWOOAPI"/>
+          <IConnect ID="2" IP="[smtp_server]" PORT="25" PROGID="TMAGWSoapAPI.ModelLoader" PATH="TMAGWSoapAPI" SSL = "true"/>
+          <IConnect ID="3" IP="[smtp_server]" PORT="1677" PROGID="TMA.MAEWSAPI.EWSSession" PATH="MAEWSAPI" VERSION="ExchangeOnline"/>
+          <IConnect ID="4" IP="[smtp_server]" PORT="1677" PROGID="TMA.TMAGWOAPI.GWSession2" PATH="TMAGWArchiveOAPI"/>
+          <IConnect ID="5" IP="[smtp_server]" PORT="1677" PROGID="TMA.TMAGWXML35.GWSession" PATH="TMAGWXML35"/>
+          <IConnect ID="6" IP="[smtp_server]" PORT="1677" PROGID="TMA.TMAPstArchiveAPI.PstArchiveSession" PATH="TMAPstArchiveAPI"/>
+          <IConnect ID="7" IP="[smtp_server]" PORT="1677" PROGID="TMA.TMAGWOAPI.GWSession" PATH="GWOOAPI"/>
+          <IConnect ID="8" IP="[smtp_server]" PORT="1677" PROGID="Netmail.Connectors.Amazon.WorkMail" PATH="AmazonWorkMail"/>
+          <IConnect ID="9" IP="[smtp_server]" PORT="1677" PROGID="Netmail.Connectors.Generic.EML" PATH="ImportConnector"/>
         </IConnects>
-        <PARAMS><![CDATA[<PARAMS><autodiscover>true</autodiscover><ADIP>[exchange_server]</ADIP><ADPORT>389</ADPORT><ADUSERNAME>[exchange_user]</ADUSERNAME><ADPASSWORD>[exchange_password_encrypted]</ADPASSWORD><EXUSER>[exchange_user]</EXUSER><EXPASSWORD>[exchange_password_encrypted]</EXPASSWORD><EXPATH>[exchange_url]</EXPATH><IsOnline>false</IsOnline></PARAMS>]]></PARAMS>
+        <PARAMS><![CDATA[<PARAMS><autodiscover>true</autodiscover><ADIP>[smtp_server]:25</ADIP><ADPORT>389</ADPORT><ADUSERNAME>[o365_user]</ADUSERNAME><ADPASSWORD>[o365_password_encrypted]</ADPASSWORD><EXUSER>[o365_user]</EXUSER><EXPASSWORD>[o365_password_encrypted]</EXPASSWORD><EXPATH>[o365_url]</EXPATH><IsOnline>true</IsOnline></PARAMS>]]></PARAMS>
       </PO>
     </admin>
   </ThreadPoolDefinition>
@@ -234,14 +234,14 @@ maTrustedKey: -
 objectClass: maGWOpenNode
 cn: GWOpenNode
 maIndexConfig:: encode_me<indexEngine type='Solr'><PeekTime>30</PeekTime><PeekMemory>10</PeekMemory><threshold>50</threshold></indexEngine>
-maGWALocations:: encode_me<gwalocation><id>1348686567445</id><type>4</type><name>Archive</name><description></description><sis><method>global</method><hashing_mode>both</hashing_mode></sis><audit_path>//[shared_storage_path]/Audit</audit_path><user>[shared_storage_account]</user><password>[shared_storage_password]</password><retention_device>1348686535780</retention_device><archive_rel></archive_rel><att_path>1408553923212</att_path><att_rel></att_rel><su></su><invisible>false</invisible></gwalocation>
-maGWALocations:: encode_me<gwalocation><id>1535567409</id><type>201</type><name>Export</name><description/><sis><method>global</method><hashing_mode>both</hashing_mode></sis><audit_path>//[shared_storage_path]/Case Management/Export</audit_path><user>[shared_storage_account]</user><password>[shared_storage_password]X</password><retention_device>2</retention_device><att_path>2</att_path><invisible>false</invisible></gwalocation>
-maGWALocations:: encode_me<gwalocation><id>1535567411</id><type>200</type><name>Quarantine</name><description/><sis><method>global</method><hashing_mode>both</hashing_mode></sis><audit_path>//[shared_storage_path]/Case Management/Quarantine</audit_path><user>[shared_storage_account]</user><password>[shared_storage_password]X</password><retention_device>3</retention_device><att_path>3</att_path><invisible>false</invisible></gwalocation>
-maRetentionDevices:: encode_me<retention_device><id>1</id><type>-1</type><type_name>Case Management</type_name><name>Case Management Device</name><path>//[shared_storage_path]/Case Management</path><login>[shared_storage_account]</login><password>[shared_storage_password]X</password></retention_device>
-maRetentionDevices:: encode_me<retention_device><id>1348686535780</id><type>5</type><type_name>FileSystem</type_name><name>localstore</name><path>//[shared_storage_path]/Mail</path><login>[shared_storage_account]</login><password>[shared_storage_password]X</password></retention_device>
-maRetentionDevices:: encode_me<retention_device><id>1408553923212</id><type>5</type><type_name>FileSystem</type_name><name>att</name><path>//[shared_storage_path]/Attachments</path><login>[shared_storage_account]</login><password>[shared_storage_password]X</password></retention_device>
-maRetentionDevices:: encode_me<retention_device><id>2</id><type>5</type><type_name>Export</type_name><name>Export</name><path>//[shared_storage_path]/Case Management/Export</path><login>[shared_storage_account]</login><password>[shared_storage_password]X</password></retention_device>
-maRetentionDevices:: encode_me<retention_device><id>3</id><type>5</type><type_name>Quarantine</type_name><name>Quarantine</name><path>//[shared_storage_path]/Case Management/Quarantine</path><login>[shared_storage_account]</login><password>[shared_storage_password]X</password></retention_device>
+maGWALocations:: encode_me<gwalocation><id>1348686567445</id><type>4</type><name>Archive</name><description></description><sis><method>global</method><hashing_mode>both</hashing_mode></sis><audit_path>C:/archive/store/Audit</audit_path><retention_device>1348686535780</retention_device><archive_rel></archive_rel><att_path>1408553923212</att_path><att_rel></att_rel><su></su><invisible>false</invisible></gwalocation>
+maGWALocations:: encode_me<gwalocation><id>1542737516</id><type>201</type><name>Export</name><description/><sis><method>global</method><hashing_mode>both</hashing_mode></sis><audit_path>C:/archive/store/Case Management/Export</audit_path><user/><password/><retention_device>2</retention_device><att_path>2</att_path><invisible>false</invisible></gwalocation>
+maGWALocations:: encode_me<gwalocation><id>1542737518</id><type>200</type><name>Quarantine</name><description/><sis><method>global</method><hashing_mode>both</hashing_mode></sis><audit_path>C:/archive/store/Case Management/Quarantine</audit_path><user/><password/><retention_device>3</retention_device><att_path>3</att_path><invisible>false</invisible></gwalocation>
+maRetentionDevices:: encode_me<retention_device><id>1</id><type>-1</type><type_name>Case Management</type_name><name>Case Management Device</name><path>C:/archive/store/Case Management</path></retention_device>
+maRetentionDevices:: encode_me<retention_device><id>1348686535780</id><type>5</type><type_name>FileSystem</type_name><name>localstore</name><path>C:/archive/store/Mail</path></retention_device>
+maRetentionDevices:: encode_me<retention_device><id>1408553923212</id><type>5</type><type_name>FileSystem</type_name><name>att</name><path>C:/archive/store/Attachments</path></retention_device>
+maRetentionDevices:: encode_me<retention_device><id>2</id><type>5</type><type_name>Export</type_name><name>Export</name><path>C:/archive/store/Case Management/Export</path></retention_device>
+maRetentionDevices:: encode_me<retention_device><id>3</id><type>5</type><type_name>Quarantine</type_name><name>Quarantine</name><path>C:/archive/store/Case Management/Quarantine</path></retention_device>
 maReportCnnString: Driver={PostgreSQL Unicode};Server=[postgresql_server];Port=[postgresql_port];Database=[postgresql_db_name];Uid=[postgresql_user_name];Pwd=[postgresql_user_password];
 maLogCnnString: Driver={PostgreSQL Unicode};Server=[postgresql_server];[postgresql_port];Database=[postgresql_db_name];Uid=[postgresql_user_name];Pwd=[postgresql_user_password];
 

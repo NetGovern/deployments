@@ -17,18 +17,11 @@ The script should run from an image with the pre-requisites and netmail installe
     -postgresql_admin_password 'postgresPassword' `
     -tenant_id tenant01 `
     -netmail_password 'NetmailPassword' `
-    -shared_storage_path '\\4.4.4.4\shared' `
-    -shared_storage_account administrator `
-    -shared_storage_password 'sharedStoragePAssword' `
-    -exchange_server 5.5.5.5 `
-    -exchange_user 'admin@exchange.com' `
-    -exchange_password 'ExchangePAssword' `
-    -exchange_url 'https://5.5.5.5/Powershell' `
-    -ma_notify_email 'notifyme@exchange.com' `
-    -smtp_server '6.6.6.6' `
-    -smtp_server_port '25' `
-    -smtp_user_account '' `
-    -smtp_user_password ''
+    -smtp_server 5.5.5.5 `
+    -o365_user 'admin@o365.com' `
+    -o365_password 'ExchangePAssword' `
+    -o365_url 'https://5.5.5.5/Powershell' `
+    -ma_notify_email 'notifyme@o365.com'
 
 #>
 
@@ -54,29 +47,15 @@ Param(
     [Parameter()]
     [string]$netmail_password,
     [Parameter()]
-    [string]$shared_storage_path = "//server/sharedlocation/",
+    [string]$smtp_server = "smtp_server",
     [Parameter()]
-    [string]$shared_storage_account = "shared_storage_account",
+    [string]$o365_user = "o365_user@onmicrosoft.com",
     [Parameter()]
-    [string]$shared_storage_password = "shared_storage_password",
+    [string]$o365_password = "o365_password",
     [Parameter()]
-    [string]$exchange_server = "exchange_server",
-    [Parameter()]
-    [string]$exchange_user = "exchange_user",
-    [Parameter()]
-    [string]$exchange_password = "exchange_password",
-    [Parameter()]
-    [string]$exchange_url = "https://exchange_server/Powershell",
+    [string]$o365_url = "https://outlook.office365.com/PowerShell",
     [Parameter()]
     [string]$ma_notify_email = 'ma_notify@email.address',
-    [Parameter()]
-    [string]$smtp_server,
-    [Parameter()]
-    [string]$smtp_server_port,
-    [Parameter()]
-    [string]$smtp_user_account,
-    [Parameter()]
-    [string]$smtp_user_password,
     [Parameter()]
     [string]$remote_provider_ip_address,
     [Parameter()]
@@ -112,7 +91,7 @@ $tokens_coll.postgresql_user_password = $postgresql_user_password
 $tokens_coll.eclients_password_hashed = HashForLDAP -password $eclients_password
 $tokens_coll.netmail_password_hashed = HashForLDAP -password $netmail_password
 $tokens_coll.eclients_password_encrypted = ( & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-edir\InstallUtils.exe mode=enc value="$eclients_password").trim()
-$tokens_coll.exchange_password_encrypted = ( & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-edir\InstallUtils.exe mode=enc value="$exchange_password").trim()
+$tokens_coll.o365_password_encrypted = ( & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-edir\InstallUtils.exe mode=enc value="$o365_password").trim()
 $tokens_coll.postgresql_server = $postgresql_server
 $tokens_coll.postgresql_port = $postgresql_port
 $tokens_coll.hostname = $env:COMPUTERNAME
@@ -120,17 +99,12 @@ $tokens_coll.ipaddress = $ipaddress
 $tokens_coll.tenant_id = $tenant_id
 $tokens_coll.ldap_server = $ldap_server
 $tokens_coll.eclients_password = $eclients_password
-$tokens_coll.shared_storage_path = $shared_storage_path
-$tokens_coll.shared_storage_account = $shared_storage_account
-$tokens_coll.shared_storage_password = $shared_storage_password
-$tokens_coll.exchange_server = $exchange_server
-$tokens_coll.exchange_user = $exchange_user
-$tokens_coll.exchange_url = $exchange_url
-$tokens_coll.ma_notify_email = $ma_notify_email
 $tokens_coll.smtp_server = $smtp_server
-$tokens_coll.smtp_server_port = $smtp_server_port
-$tokens_coll.smtp_user_account = ""
-$tokens_coll.smtp_user_password = ""
+$tokens_coll.o365_user = $o365_user
+$tokens_coll.o365_url = $o365_url
+$tokens_coll.ma_notify_email = $ma_notify_email
+
+
 
 
 # Unix2Dos - Just in case
@@ -279,5 +253,5 @@ Write-Log "Finished" $logfile
 if ( $remote_provider_ip_address -eq "0.0.0.0" ) {
     Write-Log "Skipping Remote Provider Configuration" $logfile
 } else {
-    Invoke-Expression ".\ConfigureDP.ps1 -rp_server_address $remote_provider_ip_address -rp_admin_user $remote_provider_admin_user -rp_admin_password $remote_provider_password -tenant_id $tenant_id" 
-} 
+    Invoke-Expression ".\ConfigureDP.ps1 -rp_server_address $remote_provider_ip_address -rp_admin_user $remote_provider_admin_user -rp_admin_password $remote_provider_password -tenant_id $tenant_id"
+}
