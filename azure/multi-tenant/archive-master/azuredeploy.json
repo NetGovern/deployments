@@ -327,7 +327,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdMasterSetupWizard'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13],variables('cmdParameters')[14])]"
+                    "commandToExecute": "[concat(variables('cmdMasterSetupWizard'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13])]"
                 }
             }
         }
