@@ -4,6 +4,13 @@ This ARM template deploys the shared layer services needed for a multitenant ins
 The template collects parameters taht will be passed to each one of the nested templates in the subfolders.
 The linked templates can be deployed separately if needed, by browsing to each subfolder.
 
+## Linked templates that will be deployed are
+
+* index-cluster
+* ldap-postgres-single-vm
+* remote-provider
+* shared-storage
+
 ---
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fbitbucket.netmail.com%2Fprojects%2FPUB%2Frepos%2Fdeployments%2Fraw%2Fazure%2Fmulti-tenant%2Fpod%2Fazuredeploy.json" target="_blank">

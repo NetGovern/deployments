@@ -4,10 +4,10 @@
 # Required arguments
 usage() { 
     echo "IMPORTANT! Enclose the password in single quotes to make sure that special characters are escaped.
-    Usage: $0 -r '<ldap root password>' -c '<cloudadmin password>' -n '<nipe password>' -i <mirror node ip address>" 1>&2; exit 1; 
+    Usage: $0 -r '<ldap root password>' -c '<cloudadmin password>' -n '<nipe password>'" 1>&2; exit 1; 
 }
 
-while getopts ":r:c:n:i:" o; do
+while getopts ":r:c:n:" o; do
     case "${o}" in
         r)
             ADMIN_PASSWD=${OPTARG}
@@ -18,9 +18,6 @@ while getopts ":r:c:n:i:" o; do
         n)
             NIPE_PASSWD=${OPTARG}
             ;;
-        i)
-            MIRROR_IPADDR=${OPTARG}
-            ;;
         *)
             usage
             ;;
@@ -28,14 +25,14 @@ while getopts ":r:c:n:i:" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z "${ADMIN_PASSWD}" ] || [ -z "${CLOUD_ADMIN_PASSWD}" ] || [ -z "${NIPE_PASSWD}" ] || [ -z "${MIRROR_IPADDR}" ]; then
+if [ -z "${ADMIN_PASSWD}" ] || [ -z "${CLOUD_ADMIN_PASSWD}" ] || [ -z "${NIPE_PASSWD}" ]; then
     usage
     exit 1
 fi
 
 # PREPARE PLATFORM
 sudo yum install epel-release -y
-sudo yum install -y gettext sshpass jq cifs-utils gdb bind-utils wget screen net-tools sudo telnet nmap tcpdump rsync python python-libs
+sudo yum install -y gettext sshpass jq cifs-utils gdb bind-utils wget screen net-tools sudo telnet nmap tcpdump rsync python python-libs firewalld
 
 sudo useradd netmail -m
 echo ${ADMIN_PASSWD} | sudo passwd netmail --stdin
@@ -227,45 +224,6 @@ rm -f /tmp/baseobjects.ldif
 # stop slapd
 WaitUntilDead slapd
 
-# Configure Multimaster
-cat <<EOF >>/opt/ma/netmail/etc/slapd-multimaster.conf
-moduleload syncprov
-overlay  syncprov
-syncprov-checkpoint 10 1
-syncprov-sessionlog 100
-EOF
-NODE=1
-nodes=( ${LOCALIP} ${MIRROR_IPADDR} )
-for IP in "${nodes[@]}"; do
-    if [ "${IP}" == "${LOCALIP}" ]; then
-        URL="ldap:///"
-    else
-        URL="ldap://${IP}"
-    fi
-    PROT="ldap"
-
-cat <<EOF >>/opt/ma/netmail/etc/slapd-multimaster.conf
-ServerID ${NODE} "${URL}"
-syncrepl rid=${NODE}
-         provider="${URL}"
-         type=refreshAndPersist
-         schemachecking=on
-         interval=00:00:00:10
-         retry="5 5 300 +"
-         timeout=1
-         searchbase="o=netmail"
-         bindmethod=simple
-         binddn="cn=eclients,cn=system,o=netmail"
-         credentials="${ECLIENTS}"
-EOF
-((NODE++))
-done
-
-cat <<EOF >>/opt/ma/netmail/etc/slapd-multimaster.conf
-
-MirrorMode on
-EOF
-
 echo "Configuring SLAPD/launcher service"
 sudo pkill slapd
 sudo mv /opt/ma/netmail/etc/launcher.d/10-netmail.conf /opt/ma/netmail/etc/launcher.d-available/
@@ -274,5 +232,23 @@ sudo mv /opt/ma/netmail/etc/launcher.d/92-autobackup.conf /opt/ma/netmail/etc/la
 echo "group set \"Netmail Directory\" \"Netmail Directory\"" | sudo tee /opt/ma/netmail/etc/launcher.d/05-openldap.conf
 echo "start -priority 1 slapd -d 0 -f /opt/ma/netmail/etc/slapd.conf -h \"ldapi:/// ldap:/// ldaps:///\"" | sudo tee -a /opt/ma/netmail/etc/launcher.d/05-openldap.conf
 sudo systemctl restart netmail
+
+echo "Configuring Firewall"
+#Checking Firewalld State and Status
+FWSTATE=`systemctl is-enabled firewalld`
+if [ "${FWSTATE}" != "enabled" ]; then
+    systemctl enable firewalld
+fi
+
+FWSTATUS=`systemctl is-active firewalld`
+if [ "${FWSTATUS}" != "active" ]; then
+    systemctl start firewalld
+fi
+
+echo "Opening ldap ports 389 and 636"
+firewall-cmd --permanent --add-port=389/tcp
+firewall-cmd --permanent --add-port=636/tcp
+
+systemctl reload firewalld
 
 exit 0
