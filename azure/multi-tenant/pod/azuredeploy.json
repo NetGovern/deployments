@@ -186,6 +186,9 @@
                     },
                     "subnetName": {
                         "value": "[parameters('subnetName')]"
+                    },
+                    "fullPodDeployment": {
+                        "value": "yes"
                     }
                 }
             }
@@ -223,6 +226,9 @@
                     },
                     "dataDiskSizeGB": {
                         "value": "[parameters('indexDataDiskSizeGB')]"
+                    },
+                    "fullPodDeployment": {
+                        "value": "yes"
                     }
                 }
             }
@@ -254,6 +260,9 @@
                     },
                     "subnetName": {
                         "value": "[parameters('subnetName')]"
+                    },
+                    "fullPodDeployment": {
+                        "value": "yes"
                     }
                 }
             }
@@ -284,7 +293,7 @@
                         "value": "[parameters('dbLdapNetmailUserPassword')]"
                     },
                     "zookeeperUrl": {
-                        "value": "[concat(reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value,':32000')]"
+                        "value": "[concat(reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value,':31000')]"
                     },
                     "vmSize": {
                         "value": "[parameters('remoteProviderVmSize')]"
