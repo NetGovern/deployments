@@ -106,6 +106,19 @@
                 "description": "netmail admin password"
             }
         },
+        "o365User": {
+            "type": "string",
+            "defaultValue": "you@yourdomain.com",
+            "metadata": {
+                "description": "Office 365 user account"
+            }
+        },
+        "o365Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Office 365 password"
+            }
+        },
         "smtpAddress": {
             "type": "string",
             "metadata": {
@@ -157,6 +170,9 @@
             "[concat(' -postgresql_admin_password ',parameters('postgresqlAdminPassword'))]",
             "[concat(' -tenant_id ',parameters('tenantId'))]",
             "[concat(' -netmail_password ',parameters('netmailPassword'))]",
+            "[concat(' -o365_user ',parameters('o365User'))]",
+            "[concat(' -o365_password ',parameters('o365Password'))]", 
+            "[concat(' -ma_notify_email ',parameters('o365User'))]",
             "[concat(' -remote_provider_ip_address ',parameters('remoteProviderIpAddress'))]",
             "[concat(' -remote_provider_admin_user ',parameters('remoteProviderAdminUser'))]",
             "[concat(' -remote_provider_password ',parameters('remoteProviderPassword'))]",
@@ -327,7 +343,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat(variables('cmdMasterSetupWizard'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13])]"
+                    "commandToExecute": "[concat(variables('cmdMasterSetupWizard'),' ',variables('cmdParameters')[0],variables('cmdParameters')[1],variables('cmdParameters')[2],variables('cmdParameters')[3],variables('cmdParameters')[4],variables('cmdParameters')[5],variables('cmdParameters')[6],variables('cmdParameters')[7],variables('cmdParameters')[8],variables('cmdParameters')[9],variables('cmdParameters')[10],variables('cmdParameters')[11],variables('cmdParameters')[12],variables('cmdParameters')[13],variables('cmdParameters')[14],variables('cmdParameters')[15],variables('cmdParameters')[16])]"
                 }
             }
         }
