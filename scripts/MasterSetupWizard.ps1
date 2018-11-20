@@ -228,8 +228,14 @@ $maopen_config_output = & $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureMAOpe
 Write-Log $maopen_config_output $logfile
 
 Write-Log "Configure 60-webadmin.conf" $logfile
-$webadmin_config_output = & $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureWebadmin.bat | Out-String
-Write-Log $webadmin_config_output $logfile
+Copy-Item "$env:NETMAIL_BASE_DIR\etc\launcher.d-available\60-webadmin.conf" -Destination "$env:NETMAIL_BASE_DIR\etc\launcher.d" -Force
+
+Write-Log "Configure 90-netmail-snmp.conf" $logfile
+Copy-Item "$env:NETMAIL_BASE_DIR\etc\launcher.d-available\90-netmail-snmp.conf" -Destination "$env:NETMAIL_BASE_DIR\etc\launcher.d" -Force
+
+Write-Log "Configure 91-netmail-monitor.conf" $logfile
+Copy-Item "$env:NETMAIL_BASE_DIR\etc\launcher.d-available\91-netmail-monitor.conf" -Destination "$env:NETMAIL_BASE_DIR\etc\launcher.d" -Force
+
 
 #Create "netmail-openldap" info doc snippet
 $netmail_openldap_path = "$env:NETMAIL_BASE_DIR\var\docroot\info\netmail-openldap"
