@@ -201,10 +201,9 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && sh upgrade_rpms.sh -v 6.2.1.844 -i')]",
+                    "commandToExecute": "sh azure_configure_new_data_disk.sh",
                     "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]",
-                        "[concat(variables('scriptsLocationUri'),'upgrade_rpms.sh')]"
+                        "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]"
                     ]
                 }
             },
