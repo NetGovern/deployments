@@ -15,24 +15,20 @@ The starting point is after having deployed in your infrastructure a Netgovern A
 ```
 .\MasterSetupWizard.ps1 -ldap_server 1.1.1.1 `
     -ldap_admin_dn 'cn=netmail,cn=system,o=netmail' `
-    -ldap_admin_password 'password' `
-    -zookeeper_url '2.2.2.2:31000' `
+    -ldap_admin_password 'TheLdapPassword' `
+    -zookeeper_url 2.2.2.2:31000 `
     -postgresql_server 3.3.3.3 `
     -postgresql_port 5432 `
     -postgresql_admin_user postgres `
-    -postgresql_admin_password 'password2' `
-    -tenant_id tenant01 `
-    -netmail_password 'password3' `
-    -shared_storage_path '\\4.4.4.4\shared' `
-    -shared_storage_account 'shared_user' `
-    -shared_storage_password 'password4' `
-    -exchange_server 5.5.5.5 `
-    -exchange_user 'administrator@exchange.com' `
-    -exchange_password 'password5' `
-    -exchange_url 'https://5.5.5.5/Powershell' `
-    -ma_notify_email 'notify@exchange.com' `
-    -smtp_server 6.6.6.6 `
-    -smtp_server_port '25' `
-    -smtp_user_account '' `
-    -smtp_user_password ''
+    -postgresql_admin_password 'ThePostgresPassword' `
+    -tenant_id tenant_test `
+    -netmail_password 'TheNetmailPassword' `
+    -o365_user 'admin@mydomain-on-o365.com' `
+    -o365_password 'TheO365Password' `
+    -o365_url 'https://outlook.office365.com/PowerShell' `
+    -ma_notify_email 'notify@mydomain-on-o365.com' `
+    -remote_provider_ip_address 4.4.4.4
+    -remote_provider_admin_user 'administrator'
+    -remote_provider_password 'TheRemoteProviderPassword'
+
 ```
