@@ -42,6 +42,20 @@ function valid_ip()
     return $stat
 }
 
+function firewall_service_check()
+{
+    #Checking Firewalld State and Status
+    FWSTATE=`systemctl is-enabled firewalld`
+    if [ "${FWSTATE}" != "enabled" ]; then
+        systemctl enable firewalld
+    fi
+
+    FWSTATUS=`systemctl is-active firewalld`
+    if [ "${FWSTATUS}" != "active" ]; then
+        systemctl start firewalld
+    fi
+}
+
 function configure_zookeeper()
 {
     #First node installation.  Zookeeper gets installed at the first node.  
@@ -160,6 +174,8 @@ while getopts ":mqz:fr:s:dh" arg; do
             ;;
     esac
 done
+
+firewall_service_check
 
 if [ $OPTIND -eq 1 ]; then
     Usage
