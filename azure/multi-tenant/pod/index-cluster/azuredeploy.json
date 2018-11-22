@@ -100,9 +100,9 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "netmail",
-                        "offer": "netmail-search",
-                        "sku": "c2i",
+                        "publisher": "OpenLogic",
+                        "offer": "CentOS",
+                        "sku": "7.5",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -130,11 +130,6 @@
             "copy": {
                 "name": "IndexCopy",
                 "count": "[parameters('count')]"
-            },
-            "plan": {
-                "name": "c2i",
-                "publisher": "netmail",
-                "product": "netmail-search"
             }
         },
         {
@@ -201,9 +196,10 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "sh azure_configure_new_data_disk.sh",
+                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && sh install_index.sh -p ',parameters('osAdminPassword'))]",
                     "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]"
+                        "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]",
+                        "[concat(variables('scriptsLocationUri'),'install_index.sh')]"
                     ]
                 }
             },
