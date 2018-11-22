@@ -29,13 +29,6 @@
                 "Standard_D16s_v3"
             ]
         },
-        "count": {
-            "type": "int",
-            "defaultValue": 1,
-            "metadata": {
-                "description": "Number of VMs to deploy."
-                }
-        },
         "virtualNetworkName": {
             "type": "string"
         },
@@ -82,16 +75,16 @@
             }
         },
         {
-            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1))]",
+            "name": "[parameters('virtualMachineBaseName')]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2018-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NIC')]"
+                "[concat(parameters('virtualMachineBaseName'), '_NIC')]"
             ],
             "properties": {
                 "osProfile": {
-                    "computerName": "[concat(parameters('virtualMachineBaseName'), copyIndex(1))]",
+                    "computerName": "[parameters('virtualMachineBaseName')]",
                     "adminUsername": "[parameters('osAdminUsername')]",
                     "adminPassword": "[parameters('osAdminPassword')]"
                 },
@@ -122,24 +115,20 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat( parameters('virtualMachineBaseName'), copyIndex(1),'_NIC'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat( parameters('virtualMachineBaseName'), '_NIC'))]"
                         }
                     ]
                 }
-            },
-            "copy": {
-                "name": "IndexCopy",
-                "count": "[parameters('count')]"
             }
         },
         {
-            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NIC')]",
+            "name": "[concat(parameters('virtualMachineBaseName'), '_NIC')]",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2018-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_IP')]",
-                "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NSG')]"
+                "[concat(parameters('virtualMachineBaseName'), '_IP')]",
+                "[concat(parameters('virtualMachineBaseName'), '_NSG')]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -151,31 +140,23 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(parameters('virtualMachineBaseName'), copyIndex(1),'_IP'))]"
+                                "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(parameters('virtualMachineBaseName'), '_IP'))]"
                             }
                         }
                     }
                 ],
                 "networkSecurityGroup": {
-                    "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NSG'))]"
+                    "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(parameters('virtualMachineBaseName'), '_NSG'))]"
                 }
-            },
-            "copy": {
-                "name": "IndexCopy",
-                "count": "[parameters('count')]"
             }
         },
         {
-            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_IP')]",
+            "name": "[concat(parameters('virtualMachineBaseName'), '_IP')]",
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2017-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "publicIPAllocationMethod": "[variables('publicIpAddressType')]"
-            },
-            "copy": {
-                "name": "IndexCopy",
-                "count": "[parameters('count')]"
             },
             "sku": {
                 "name": "[variables('publicIpAddressSku')]"
@@ -183,11 +164,11 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'/extensions')]",
+            "name": "[concat(parameters('virtualMachineBaseName'), '/extensions')]",
             "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineBaseName'), copyIndex(1))]"
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineBaseName'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -196,20 +177,17 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && sh install_index.sh -p ',parameters('osAdminPassword'))]",
+                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && sh install_index.sh -p ',parameters('osAdminPassword'),' && sleep 60 && sh solr_config.sh -q')]",
                     "fileUris": [
                         "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]",
-                        "[concat(variables('scriptsLocationUri'),'install_index.sh')]"
+                        "[concat(variables('scriptsLocationUri'),'install_index.sh')]",
+                        "[concat(variables('scriptsLocationUri'),'solr_config.sh')]"
                     ]
                 }
-            },
-            "copy": {
-                "name": "IndexCopy",
-                "count": "[parameters('count')]"
             }
         },
         {
-            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'_NSG')]",
+            "name": "[concat(parameters('virtualMachineBaseName'), '_NSG')]",
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2018-01-01",
             "location": "[resourceGroup().location]",
@@ -231,17 +209,12 @@
                         }
                     }
                 ]
-            },
-            "copy": {
-                "name": "IndexCopy",
-                "count": "[parameters('count')]"
-            }
-        }
+            }        }
     ],
     "outputs": {
         "zookeeperIpAddress": {
             "type": "string",
-            "value": "[reference(concat(parameters('virtualMachineBaseName'), '1_NIC')).ipConfigurations[0].properties.privateIPAddress]"
+            "value": "[reference(concat(parameters('virtualMachineBaseName'), '_NIC')).ipConfigurations[0].properties.privateIPAddress]"
         }
     }
 }
