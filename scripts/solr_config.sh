@@ -175,12 +175,12 @@ while getopts ":mqz:fr:s:dh" arg; do
     esac
 done
 
-firewall_service_check
-
 if [ $OPTIND -eq 1 ]; then
     Usage
     exit 0
 fi
+
+firewall_service_check
 
 if [ ${ZOOKEEPER} -eq 0 ]; then
     valid_ip ${ZOOKEEPER_HOST}
