@@ -47,12 +47,12 @@ function firewall_service_check()
     #Checking Firewalld State and Status
     FWSTATE=`systemctl is-enabled firewalld`
     if [ "${FWSTATE}" != "enabled" ]; then
-        systemctl enable firewalld
+        sudo systemctl enable firewalld
     fi
 
     FWSTATUS=`systemctl is-active firewalld`
     if [ "${FWSTATUS}" != "active" ]; then
-        systemctl start firewalld
+        sudo systemctl start firewalld
     fi
 }
 
