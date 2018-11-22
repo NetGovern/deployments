@@ -77,13 +77,6 @@
                 "description": "Virtual Machine sizes for the Index Server(s).  B series are not recommended for Production workloads"
             }
         },
-        "indexCount": {
-            "type": "int",
-            "defaultValue": 1,
-            "metadata": {
-                "description": "Number of index VMs to deploy."
-            }
-        },
         "indexDataDiskSizeGB": {
             "type": "int",
             "defaultValue": 150,
@@ -214,9 +207,6 @@
                     },
                     "virtualMachineSize": {
                         "value": "[parameters('indexVirtualMachineSize')]"
-                    },
-                    "count": {
-                        "value": "[parameters('indexCount')]"
                     },
                     "virtualNetworkName": {
                         "value": "[parameters('virtualNetworkName')]"
