@@ -77,8 +77,8 @@ $date = Get-Date -f yyyyMMdd_hh_mm_ss
 $logfile = ".\$date`_MasterSetupWizard_log.txt"
 $postgresql_user_password = (GeneratePassword 8)
 $eclients_password = GetRandomEclients
-$postgresql_user_name = "usr_$tenant_id"
-$postgresql_db_name = $tenant_id
+$postgresql_user_name = "usr_$tenant_id".ToLower()
+$postgresql_db_name = $($tenant_id).ToLower()
 
 # Setting up parameters dict
 $tokens_coll = @{}
