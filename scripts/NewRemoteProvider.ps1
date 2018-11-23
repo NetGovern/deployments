@@ -29,8 +29,11 @@ Move-Item -Path `
     -Destination `
     "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d-available\10-netmail.conf"
 
+
+"Dummy File" | Out-File "$env:NETMAIL_BASE_DIR\etc\mdb.conf" -encoding utf8
 Write-Output "Create Netmail Indexer launcher config file"
 & $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureIndexer.bat
+Remove-Item -Path "$env:NETMAIL_BASE_DIR\etc\mdb.conf" -Force
 
 Write-Output "Configuring NIPE .properties files"
 $edir_properties_for_nipe = @"
@@ -41,6 +44,7 @@ edir.loginpwdclear=$multitennipe_password
 edir.container=o=netmail
 edir.ssl=false
 edir.multitenant=true
+
 "@
 
 $edir_properties_for_nipe | `
@@ -54,7 +58,7 @@ $resource = "resource=info.json"
 $clusterscheme = "clusterscheme=none"
 $netmail_properties = $netmail_properties.replace("scheme=https", "$scheme")
 $netmail_properties = $netmail_properties.replace("resource=https://localhost/info.json", "$resource")
-$netmail_properties = $netmail_properties.replace("clusterscheme=https", "$resource")
+$netmail_properties = $netmail_properties.replace("clusterscheme=https", "$clusterscheme")
 $netmail_properties += "`ntrustedIps=All" 
 $netmail_properties | Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\netmail.properties" -encoding Utf8
 

@@ -124,10 +124,15 @@ $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.loginpwd=.+", "edir.loginpwd=$eclient
 $xgwxmlv_cfg | Out-File -FilePath "DP:\RemoteProvider_$tenant_id\xgwxmlv.cfg"
 
 Write-Host "Create launcher config file"
-"group set `"Netmail Client Access $tenant_id`" `"Netmail Client Access $tenant_id`"" | `
-    Out-File -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa_$tenant_id.conf" -encoding Utf8
-"start -name $tenant_id `"C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\..\RemoteProvider_$tenant_id\XAWAService.exe`"" | `
-    Out-File -Append -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa_$tenant_id.conf" -encoding Utf8
+& $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureAWA.bat
+
+$awa_conf = Get-Content "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa.conf"
+$awa_conf = $awa_conf.Replace("RemoteProvider", "RemoteProvider_$tenant_id")
+$awa_conf = $awa_conf.Replace("-name awa", "-name awa_$tenant_id")
+$awa_conf | Out-File -FilePath "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa_$tenant_id.conf" -encoding Utf8
+Remove-Item -Path "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa.conf" -Force
+Move-Item "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa_$tenant_id.conf" -Destination "DP:\Netmail WebAdmin\etc\launcher.d\" -Force
+
 Remove-PSDrive -Name DP
 
 
