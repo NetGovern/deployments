@@ -30,10 +30,7 @@ Move-Item -Path `
     "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d-available\10-netmail.conf"
 
 Write-Output "Create Netmail Indexer launcher config file"
-"group set `"Netmail Indexer`" `"Runs Netmail Indexing services`"" | `
-    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\50-indexer.conf" -encoding Utf8
-"start -name indexer `"C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\..\Nipe\IndexerService.exe`"" | `
-    Out-File -Append -FilePath "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\50-indexer.conf" -encoding Utf8
+& $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureIndexer.bat
 
 Write-Output "Configuring NIPE .properties files"
 $edir_properties_for_nipe = @"
