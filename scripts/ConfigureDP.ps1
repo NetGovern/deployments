@@ -125,9 +125,9 @@ $xgwxmlv_cfg | Out-File -FilePath "DP:\RemoteProvider_$tenant_id\xgwxmlv.cfg"
 
 Write-Host "Create launcher config file"
 "group set `"Netmail Client Access $tenant_id`" `"Netmail Client Access $tenant_id`"" | `
-    Out-File -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa_$tenant_id.conf"
+    Out-File -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa_$tenant_id.conf" -encoding Utf8
 "start -name $tenant_id `"C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\..\RemoteProvider_$tenant_id\XAWAService.exe`"" | `
-    Out-File -Append -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa_$tenant_id.conf"
+    Out-File -Append -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa_$tenant_id.conf" -encoding Utf8
 Remove-PSDrive -Name DP
 
 

@@ -31,9 +31,9 @@ Move-Item -Path `
 
 Write-Output "Create Netmail Indexer launcher config file"
 "group set `"Netmail Indexer`" `"Runs Netmail Indexing services`"" | `
-    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\50-indexer.conf"
+    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\50-indexer.conf" -encoding Utf8
 "start -name indexer `"C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\..\Nipe\IndexerService.exe`"" | `
-    Out-File -Append -FilePath "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\50-indexer.conf"
+    Out-File -Append -FilePath "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\50-indexer.conf" -encoding Utf8
 
 Write-Output "Configuring NIPE .properties files"
 $edir_properties_for_nipe = @"
@@ -47,9 +47,9 @@ edir.multitenant=true
 "@
 
 $edir_properties_for_nipe | `
-    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\edir.properties" 
+    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\edir.properties" -encoding Utf8
 "hosts=$zookeeper_url" | `
-    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\solr.properties"
+    Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\solr.properties" -encoding Utf8
 
 $netmail_properties = Get-Content "C:\Program Files (x86)\Messaging Architects\Nipe\Config\netmail.properties"
 $scheme = "scheme=file"
@@ -59,7 +59,7 @@ $netmail_properties = $netmail_properties.replace("scheme=https", "$scheme")
 $netmail_properties = $netmail_properties.replace("resource=https://localhost/info.json", "$resource")
 $netmail_properties = $netmail_properties.replace("clusterscheme=https", "$resource")
 $netmail_properties += "`ntrustedIps=All" 
-$netmail_properties | Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\netmail.properties"
+$netmail_properties | Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\netmail.properties" -encoding Utf8
 
 # Allow SMB traffic
 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
