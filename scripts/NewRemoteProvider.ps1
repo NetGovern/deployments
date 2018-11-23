@@ -27,6 +27,8 @@ Param(
 "Dummy File" | Out-File "$env:NETMAIL_BASE_DIR\etc\mdb.conf" -encoding utf8
 Write-Output "Create Netmail Indexer launcher config file"
 & $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureIndexer.bat
+Write-Output "Create Netmail Client Access launcher config file"
+& $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureAWA.bat
 Remove-Item -Path "$env:NETMAIL_BASE_DIR\etc\mdb.conf" -Force
 
 Write-Output "Configuring NIPE .properties files"
