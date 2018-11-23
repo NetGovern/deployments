@@ -23,12 +23,6 @@ Param(
     [string]$zookeeper_url
 )
 
-Write-Output "Cleaning up launcher"
-Move-Item -Path `
-    "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d\10-netmail.conf" `
-    -Destination `
-    "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\etc\launcher.d-available\10-netmail.conf"
-
 
 "Dummy File" | Out-File "$env:NETMAIL_BASE_DIR\etc\mdb.conf" -encoding utf8
 Write-Output "Create Netmail Indexer launcher config file"
