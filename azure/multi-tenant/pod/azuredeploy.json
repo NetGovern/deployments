@@ -2,28 +2,16 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "windowsServerAdminUsername": {
+        "OSAdminUsername": {
             "type": "string",
             "metadata": {
-                "description": "Username for the Windows Servers to be deployed in your POD"
+                "description": "Admin Username for the Windows and Linux Servers to be deployed in your POD"
             }
         },
-        "windowsServerAdminPassword": {
+        "OSAdminPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Password for the Windows Servers to be deployed in your POD"
-            }
-        },
-        "linuxOSAdminUsername": {
-            "type": "string",
-            "metadata": {
-                "description": "User name for the linux servers account with sudo rights to be deployed in your POD"
-            }
-        },
-        "linuxOSAdminPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for the linux servers account with sudo rights to be deployed in your POD"
+                "description": "Password for the Admin User account for the Windows and Linux Servers to be deployed in your POD"
             }
         },
         "StorageServerWindowsOSVersion": {
@@ -39,9 +27,9 @@
         },
         "StorageServerVmSize": {
             "type": "string",
-            "defaultValue": "Standard_B2",
+            "defaultValue": "Standard_B2s",
             "allowedValues": [
-                "Standard_B2"
+                "Standard_B2s"
             ],
             "metadata": {
                 "description": "The Azure size of the Storage Server Virtual Machines"
@@ -49,17 +37,17 @@
         },
         "StorageServerDataDiskSizeGB": {
             "type": "int",
-            "defaultValue": 256,
+            "defaultValue": 128,
             "minValue": 32,
             "maxValue": 2048,
             "metadata": {
                 "description": "The size of the Data Disk used when provisioning"
             }
         },
-        "indexVirtualMachineBaseName": {
+        "indexVirtualMachineName": {
             "type": "string",
             "metadata": {
-                "description": "Base name used to create the Index Server(s)"
+                "description": "VM Name for the Index Server"
             }
         },
         "indexVirtualMachineSize": {
@@ -74,26 +62,21 @@
                 "Standard_D16s_v3"
             ],
             "metadata": {
-                "description": "Virtual Machine sizes for the Index Server(s).  B series are not recommended for Production workloads"
+                "description": "Virtual Machine sizes for the Index Server"
             }
         },
         "indexDataDiskSizeGB": {
             "type": "int",
-            "defaultValue": 128,
+            "defaultValue": 64,
             "minValue": 32,
             "maxValue": 1024,
             "metadata": {
                 "description": "Size of the data disk to be attached to VMs"
             }
         },
-        "dbLdapNetmailUserPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for the Netmail Application User in the LDAP Virtual Machine"
-            }
-        },
         "dbLdapVmSize": {
             "type": "string",
+            "defaultValue": "Standard_B2s",
             "allowedValues": [
                 "Standard_B1ms",
                 "Standard_B2s"
@@ -159,10 +142,10 @@
                 },
                 "parameters": {
                     "adminUsername": {
-                        "value": "[parameters('windowsServerAdminUsername')]"
+                        "value": "[parameters('OSAdminUsername')]"
                     },
                     "adminPassword": {
-                        "value": "[parameters('windowsServerAdminPassword')]"
+                        "value": "[parameters('OSAdminPassword')]"
                     },
                     "windowsOSVersion": {
                         "value": "[parameters('StorageServerWindowsOSVersion')]"
@@ -196,13 +179,13 @@
                 },
                 "parameters": {
                     "virtualMachineBaseName": {
-                        "value": "[parameters('indexVirtualMachineBaseName')]"
+                        "value": "[parameters('indexVirtualMachineName')]"
                     },
                     "osAdminUsername": {
-                        "value": "[parameters('linuxOsAdminUsername')]"
+                        "value": "[parameters('OSAdminUsername')]"
                     },
                     "osAdminPassword": {
-                        "value": "[parameters('linuxOSAdminPassword')]"
+                        "value": "[parameters('OSAdminPassword')]"
                     },
                     "virtualMachineSize": {
                         "value": "[parameters('indexVirtualMachineSize')]"
@@ -233,13 +216,13 @@
                 },
                 "parameters": {
                     "netmailPassword": {
-                        "value": "[parameters('dbLdapNetmailUserPassword')]"
+                        "value": "[parameters('OSAdminPassword')]"
                     },
                     "osAdminUsername": {
-                        "value": "[parameters('linuxOsAdminUsername')]"
+                        "value": "[parameters('OSAdminUsername')]"
                     },
                     "osAdminPassword": {
-                        "value": "[parameters('linuxOSAdminPassword')]"
+                        "value": "[parameters('OSAdminPassword')]"
                     },
                     "vmSize": {
                         "value": "[parameters('dbLdapVmSize')]"
@@ -270,16 +253,16 @@
                         "value": "[parameters('remoteProviderVmName')]"
                     },
                     "adminUsername": {
-                        "value": "[parameters('windowsServerAdminUsername')]"
+                        "value": "[parameters('OSAdminUsername')]"
                     },
                     "adminPassword": {
-                        "value": "[parameters('windowsServerAdminPassword')]"
+                        "value": "[parameters('OSAdminPassword')]"
                     },
                     "ldapServer": {
                         "value": "[reference('linkedTemplateDBLDAP').outputs.ldapIpAddress.value]"
                     },
                     "multitenantnipeLdapPassword": {
-                        "value": "[parameters('dbLdapNetmailUserPassword')]"
+                        "value": "[parameters('OSAdminPassword')]"
                     },
                     "zookeeperIp": {
                         "value": "[reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value]"

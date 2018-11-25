@@ -232,11 +232,12 @@
             "type": "CustomScriptExtension",
             "typeHandlerVersion": "1.9",
             "autoUpgradeMinorVersion": true,
-            "settings": {},
-            "protectedSettings": {
+            "settings": {
                 "fileUris": [
                     "[concat(variables('scriptsLocationUri'),'InitializeNewDataDisk.ps1')]"
-                ],
+                ]
+            },
+            "protectedSettings": {
                 "commandToExecute": "Powershell -ExecutionPolicy Unrestricted -Command \"Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True\" & Powershell -ExecutionPolicy Unrestricted -File InitializeNewDataDisk.ps1 -DiskLabel \"DataDisk1\""
             }
         }

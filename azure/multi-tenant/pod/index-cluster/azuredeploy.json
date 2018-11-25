@@ -99,7 +99,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "createOption": "fromImage",
+                        "createOption": "FromImage",
                         "managedDisk": {
                             "storageAccountType": "[variables('storageAccountType')]"
                         }
@@ -108,7 +108,10 @@
                         {
                             "diskSizeGB": "[parameters('dataDiskSizeGB')]",
                             "lun": 0,
-                            "createOption": "Empty"
+                            "createOption": "Empty",
+                            "managedDisk": {
+                                "storageAccountType": "[variables('storageAccountType')]"
+                            }
                         }
                     ]
                 },

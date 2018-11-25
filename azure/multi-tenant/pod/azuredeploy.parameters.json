@@ -2,16 +2,10 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "windowsServerAdminUsername": {
+      "OSAdminUsername": {
         "value": null
       },
-      "windowsServerAdminPassword": {
-        "value": null
-      },
-      "linuxOSAdminUsername": {
-        "value": null
-      },
-      "linuxOSAdminPassword": {
+      "OSAdminPassword": {
         "value": null
       },
       "StorageServerWindowsOSVersion": {
@@ -23,22 +17,16 @@
       "StorageServerDataDiskSizeGB": {
         "value": 256
       },
-      "indexVirtualMachineBaseName": {
+      "indexVirtualMachineName": {
         "value": null
       },
       "indexVirtualMachineSize": {
         "value": "Standard_B2s"
       },
-      "indexCount": {
-        "value": 1
-      },
       "indexDataDiskSizeGB": {
         "value": null
       },
-      "ldapClusterNetmailUserPassword": {
-        "value": null
-      },
-      "ldapClusterVmSize": {
+      "dbLdapVmSize": {
         "value": null
       },
       "remoteProviderVmName": {
