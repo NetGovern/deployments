@@ -49,9 +49,12 @@ Foreach-Object {
     if ($http_port -notmatch "^\#") {
             $trash,$http_port  = ($http_port -split "=", 2).Trim()
     }
-
-    $http_ports_array += [int]$http_port
-    $ssl_ports_array += [int]$ssl_port.Set.'#text'
+    if ([int]$http_port -gt 8888) {
+        $http_ports_array += [int]$http_port
+    }
+    if ([int]$ssl_port.Set.'#text' -gt 8443) {
+        $ssl_ports_array += [int]$ssl_port.Set.'#text'
+    }
 }
 
 $i = 0
@@ -87,11 +90,15 @@ Copy-Item 'DP:\ConfigTemplates\DP\xgwxmlv.cfg' -Destination "DP:\RemoteProvider_
 
 Write-Host "Configure jetty-ssl.xml"
 $jetty_ssl = Get-content -Path ("DP:\RemoteProvider_$tenant_id\jetty-ssl.xml")
-$jetty_ssl -replace 'port".+', "port`">$ssl_free_port</Set>" | Out-File -FilePath "DP:\RemoteProvider_$tenant_id\jetty-ssl.xml"
+$jetty_ssl -replace 'port".+', "port`">$ssl_free_port</Set>" | Out-File -FilePath "DP:\RemoteProvider_$tenant_id\jetty-ssl.xml" -Encoding ascii
 
 Write-Host "Configure xgwxmlv.cfg"
 #Getting data from master config files
 $edir_properties_nipe_master = "$env:NETMAIL_BASE_DIR\..\Nipe\Config\edir.properties"
+# Unix2Dos - Just in case
+if ( Select-String -InputObject $edir_properties_nipe_master -Pattern "[^`r]`n" ) {
+    $edir_properties_nipe_master = $edir_properties_nipe_master.Replace("`n", "`r`n")
+}
 
 $ipaddress = (Test-Connection -ComputerName $env:COMPUTERNAME -Count 1 | Select-Object IPV4Address).IPV4Address
 
@@ -121,17 +128,15 @@ $eclients_password = "$(((Select-String 'edir.loginpwdclear=' $edir_properties_n
 $eclients_password_encrypted = ( & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-edir\InstallUtils.exe mode=enc value="$eclients_password").trim()
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.loginpwd=.+", "edir.loginpwd=$eclients_password_encrypted"
 
-$xgwxmlv_cfg | Out-File -FilePath "DP:\RemoteProvider_$tenant_id\xgwxmlv.cfg"
+$xgwxmlv_cfg | Out-File -FilePath "DP:\RemoteProvider_$tenant_id\xgwxmlv.cfg" -Encoding ascii
 
 Write-Host "Create launcher config file"
-& $env:NETMAIL_BASE_DIR\etc\scripts\setup\ConfigureAWA.bat
-
-$awa_conf = Get-Content "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa.conf"
-$awa_conf = $awa_conf.Replace("RemoteProvider", "RemoteProvider_$tenant_id")
-$awa_conf = $awa_conf.Replace("-name awa", "-name awa_$tenant_id")
-$awa_conf | Out-File -FilePath "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa_$tenant_id.conf" -encoding Utf8
-Remove-Item -Path "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa.conf" -Force
-Move-Item "$env:NETMAIL_BASE_DIR\etc\launcher.d\60-awa_$tenant_id.conf" -Destination "DP:\Netmail WebAdmin\etc\launcher.d\" -Force
+$awa_conf = @"
+group set "Netmail Client Access $tenant_id" "Netmail Client Access $tenant_id"
+start -name awa_$tenant_id "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\..\RemoteProvider_$tenant_id\XAWAService.exe"
+"@
+$awa_conf | `
+    Out-File -FilePath "DP:\Netmail WebAdmin\etc\launcher.d\60-awa-$tenant_id.conf" -Encoding ascii
 
 Remove-PSDrive -Name DP
 

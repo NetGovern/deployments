@@ -69,9 +69,13 @@ $clusterConfig_xml = $clusterConfig_xml -replace '<NOPEIP/>', "$ipaddress"
 $clusterConfig_xml = $clusterConfig_xml -replace '<WORKERIP/>', "$ipaddress"
 $clusterConfig_xml = $clusterConfig_xml -replace '<WORKER_REMOTETCP/>', "8585"
 
-$clusterConfig_xml | Out-File -FilePath "$env:NETMAIL_BASE_DIR\..\Config\clusterConfig.xml"
+$clusterConfig_xml | Out-File -FilePath "$env:NETMAIL_BASE_DIR\..\Config\clusterConfig.xml" -Encoding ascii
 
 # Making sure no eclients.dat is present at the worker
 If ( Test-Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" ) {
     Rename-Item -Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" -NewName "eclients.do_not_use"
 }
+
+#Restart Netmail services
+Restart-Service -Name NetmailLauncherService
+Write-Output "Finished"

@@ -224,7 +224,11 @@ $netmail_archive = Get-Content "$env:NETMAIL_BASE_DIR\etc\info.json" | Out-Strin
 $netmail_archive | Add-Member -Name "master" -Value "true" -MemberType NoteProperty
 $netmail_archive | ConvertTo-Json -Compress | Set-Content -Path "$env:NETMAIL_BASE_DIR\var\docroot\info\netmail-archive"
 
-$ajaj_json.Replace("`n", "`r`n") | Set-Content -Path "$env:NETMAIL_BASE_DIR\var\docroot\info\ajaj.json"
+# Unix2Dos - Just in case
+if ( Select-String -InputObject $ajaj_json -Pattern "[^`r]`n" ) {
+    $ajaj_json = $ajaj_json.Replace("`n", "`r`n")
+}
+$ajaj_json | Set-Content -Path "$env:NETMAIL_BASE_DIR\var\docroot\info\ajaj.json"
 
 # Generate ssl certificates for apid
 
