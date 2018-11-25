@@ -187,7 +187,7 @@ Copy-Item ".\edir.properties" -Destination "$env:NETMAIL_BASE_DIR\..\Nipe\Config
 Set-Content -Value ([byte[]][char[]] $eclients_password) -Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" -Encoding Byte
 
 #Create solr.properties
-Set-Content -Value "hosts=$($zookeeper_ip):3200/solr" -Path "$env:NETMAIL_BASE_DIR\..\Nipe\Config\solr.properties"
+Set-Content -Value "hosts=$($zookeeper_ip):32000/solr" -Path "$env:NETMAIL_BASE_DIR\..\Nipe\Config\solr.properties"
 
 Write-Log "Create New CFS Cluster" $logfile
 $cfs_output = & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-ConfigureCFS.bat new $ipaddress | Out-String

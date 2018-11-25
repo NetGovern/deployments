@@ -47,7 +47,7 @@ if ( Select-String -InputObject $edir_properties_for_nipe -Pattern "[^`r]`n" ) {
 
 $edir_properties_for_nipe | `
     Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\edir.properties" -encoding ascii
-"hosts=$zookeeper_ip:32000/solr" | `
+"hosts=$($zookeeper_ip):32000/solr" | `
     Out-File -FilePath "C:\Program Files (x86)\Messaging Architects\Nipe\Config\solr.properties" -encoding ascii
 
 $netmail_properties = Get-Content "C:\Program Files (x86)\Messaging Architects\Nipe\Config\netmail.properties"
