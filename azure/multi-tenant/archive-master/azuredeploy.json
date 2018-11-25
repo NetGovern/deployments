@@ -22,6 +22,7 @@
         },
         "vmSize": {
             "type": "string",
+            "defaultValue": "Standard_B2s",
             "allowedValues": [
                 "Standard_B2ms",
                 "Standard_B2s"
@@ -103,7 +104,7 @@
         "newNetmailPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "New netgovern admin password"
+                "description": "New netgovern admin password for this node only"
             }
         },
         "o365User": {
@@ -163,7 +164,7 @@
             "[concat(' -ldap_server ',parameters('ldapServer'))]",
             "[concat(' -ldap_admin_dn ',parameters('ldapAdminDn'))]",
             "[concat(' -ldap_admin_password ',parameters('ldapAdminPassword'))]",
-            "[concat(' -zookeeper_url ',parameters('zookeeperIp'))]",
+            "[concat(' -zookeeper_ip ',parameters('zookeeperIp'))]",
             "[concat(' -postgresql_server ',parameters('postgresqlServer'))]",
             "[concat(' -postgresql_port ',parameters('postgresqlPort'))]",
             "[concat(' -postgresql_admin_user ',parameters('postgresqlAdminUser'))]",
