@@ -10,7 +10,7 @@ The script should run from an image with the pre-requisites and netmail installe
 .\MasterSetupWizard.ps1 -ldap_server 1.1.1.1 `
     -ldap_admin_dn 'cn=netmail,cn=system,o=netmail' `
     -ldap_admin_password 'The Password' `
-    -zookeeper_url 2.2.2.2:31000 `
+    -zookeeper_ip 2.2.2.2 `
     -postgresql_server 3.3.3.3 `
     -postgresql_port 5432 `
     -postgresql_admin_user postgres `
@@ -33,7 +33,7 @@ Param(
     [Parameter()]
     [string]$ldap_admin_password,
     [Parameter()]
-    [string]$zookeeper_url,
+    [string]$zookeeper_ip,
     [Parameter()]
     [string]$postgresql_server,
     [Parameter()]
@@ -187,7 +187,7 @@ Copy-Item ".\edir.properties" -Destination "$env:NETMAIL_BASE_DIR\..\Nipe\Config
 Set-Content -Value ([byte[]][char[]] $eclients_password) -Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" -Encoding Byte
 
 #Create solr.properties
-Set-Content -Value "hosts=$zookeeper_url" -Path "$env:NETMAIL_BASE_DIR\..\Nipe\Config\solr.properties"
+Set-Content -Value "hosts=$($zookeeper_ip):3200/solr" -Path "$env:NETMAIL_BASE_DIR\..\Nipe\Config\solr.properties"
 
 Write-Log "Create New CFS Cluster" $logfile
 $cfs_output = & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-ConfigureCFS.bat new $ipaddress | Out-String
