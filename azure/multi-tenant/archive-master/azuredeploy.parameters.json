@@ -29,7 +29,7 @@
       "ldapAdminPassword": {
         "value": null
       },
-      "zookeeperUrl": {
+      "zookeeperIp": {
         "value": null
       },
       "postgresqlServer": {
@@ -47,7 +47,7 @@
       "tenantId": {
         "value": null
       },
-      "netmailPassword": {
+      "newNetmailPassword": {
         "value": null
       },
       "smtpAddress": {
@@ -57,7 +57,7 @@
         "value": "25"
       },
       "remoteProviderIpAddress": {
-        "value": "changeMe"
+        "value": "0.0.0.0"
       },
       "remoteProviderAdminUser": {
         "value": "changeMe"

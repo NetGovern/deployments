@@ -61,11 +61,11 @@
                 "description": "Shared infrastructure - ldap admin password"
             }
         },
-        "zookeeperUrl": {
+        "zookeeperIp": {
             "type": "string",
-            "defaultValue": "IP ADDRESS:port number",
+            "defaultValue": "0.0.0.0",
             "metadata": {
-                "description": "Shared infrastructure - zookeeper url - ipaddress:port"
+                "description": "Shared infrastructure - zookeeper ipaddress"
             }
         },
         "postgresqlServer": {
@@ -97,13 +97,13 @@
         "tenantId": {
             "type": "string",
             "metadata": {
-                "description": "Tenant ID"
+                "description": "Netmail Tenant ID to be onboarded"
             }
         },
-        "netmailPassword": {
+        "newNetmailPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "netmail admin password"
+                "description": "New netgovern admin password"
             }
         },
         "o365User": {
@@ -136,14 +136,14 @@
             "type": "string",
             "defaultValue": "changeMe",
             "metadata": {
-                "description": "Remote Provider Admin user account"
+                "description": "Remote Provider VM Admin user account"
             }
         },
         "remoteProviderPassword": {
             "type": "securestring",
             "defaultValue": "changeMe",
             "metadata": {
-                "description": "Remote Provider Admin password"
+                "description": "Remote Provider VM Admin password"
             }
         }
     },
@@ -158,18 +158,18 @@
         "SecGroupName": "[concat(parameters('vmName'), '-NSG')]",
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
-        "storageAccountType" : "Premium_LRS",
+        "storageAccountType" : "Standard_LRS",
         "cmdParameters": [
             "[concat(' -ldap_server ',parameters('ldapServer'))]",
             "[concat(' -ldap_admin_dn ',parameters('ldapAdminDn'))]",
             "[concat(' -ldap_admin_password ',parameters('ldapAdminPassword'))]",
-            "[concat(' -zookeeper_url ',parameters('zookeeperUrl'))]",
+            "[concat(' -zookeeper_url ',parameters('zookeeperIp'))]",
             "[concat(' -postgresql_server ',parameters('postgresqlServer'))]",
             "[concat(' -postgresql_port ',parameters('postgresqlPort'))]",
             "[concat(' -postgresql_admin_user ',parameters('postgresqlAdminUser'))]",
             "[concat(' -postgresql_admin_password ',parameters('postgresqlAdminPassword'))]",
             "[concat(' -tenant_id ',parameters('tenantId'))]",
-            "[concat(' -netmail_password ',parameters('netmailPassword'))]",
+            "[concat(' -netmail_password ',parameters('newNetmailPassword'))]",
             "[concat(' -o365_user ',parameters('o365User'))]",
             "[concat(' -o365_password ',parameters('o365Password'))]", 
             "[concat(' -ma_notify_email ',parameters('o365User'))]",
@@ -220,7 +220,10 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "createOption": "FromImage"
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
                     }
                 },
                 "networkProfile": {

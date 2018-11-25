@@ -33,17 +33,16 @@
                 "description": "Password for the cn=multitennipe,o=netmail"
             }
         },
-        "zookeeperUrl": {
+        "zookeeperIp": {
             "type": "string",
             "metadata": {
-                "description": "Index' zookeeper URL"
+                "description": "Index server IP Address"
             }
         },
         "vmSize": {
             "type": "string",
             "allowedValues": [
-                "Standard_B2ms",
-                "Standard_D2s_v3"
+                "Standard_B2ms"
             ],
             "metadata": {
                 "description": "The size of the virtual machines used when provisioning"
@@ -82,12 +81,12 @@
         "RPSecGroupName": "[concat(parameters('vmName'), '-NSG')]",
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
-        "storageAccountType" : "Premium_LRS",
+        "storageAccountType" : "Standard_LRS",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/",
         "cmdParameters": [
             "[concat(' -ldap_server ',parameters('ldapServer'))]",
             "[concat(' -multitennipe_password ',parameters('multitenantnipeLdapPassword'))]",
-            "[concat(' -zookeeper_url ',parameters('zookeeperUrl'))]"
+            "[concat(' -zookeeper_ip ',parameters('zookeeperIp'))]"
         ],
         "cmdNewRemoteProvider": "powershell -ExecutionPolicy Unrestricted -File NewRemoteProvider.ps1"
     },
@@ -131,7 +130,10 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "createOption": "FromImage"
+                        "createOption": "FromImage", 
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
                     }
                 },
                 "networkProfile": {
@@ -200,7 +202,7 @@
                         "name": "default-allow-rdp",
                         "properties": {
                             "priority": 1010,
-                            "protocol": "TCP",
+                            "protocol": "Tcp",
                             "access": "Allow",
                             "direction": "Inbound",
                             "sourceApplicationSecurityGroups": [],

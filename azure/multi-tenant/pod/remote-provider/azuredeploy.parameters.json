@@ -17,7 +17,7 @@
         "multitenantnipeLdapPassword": {
             "value": null
         },
-        "zookeeperUrl": {
+        "zookeeperIp": {
             "value": null
         },
         "vmSize": {

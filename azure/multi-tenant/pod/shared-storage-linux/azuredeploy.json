@@ -60,7 +60,8 @@
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "networkSecurityGroupName": "[concat(parameters('vmName'),'NSG')]",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/",
-        "location":"[resourceGroup().location]"
+        "location":"[resourceGroup().location]",
+        "storageAccountType": "Standard_LRS"
     },
     "resources": [
         {
@@ -160,10 +161,11 @@
                 "version": "latest" 
             },
             "osDisk": {
-              "createOption": "FromImage"
-            },
-            "dataDisks": [
-            ]
+                "createOption": "FromImage", 
+                "managedDisk": {
+                    "storageAccountType": "[variables('storageAccountType')]"
+                }
+            }
           },
             "networkProfile": {
                 "networkInterfaces": [

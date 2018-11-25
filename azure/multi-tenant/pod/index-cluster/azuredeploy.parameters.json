@@ -14,9 +14,6 @@
       "virtualMachineSize": {
         "value": "Standard_B2s"
       },
-      "count": {
-        "value": 1
-      },
       "virtualNetworkName": {
         "value": null
       },
@@ -24,7 +21,7 @@
         "value": null
       },
       "dataDiskSizeGB": {
-        "value": 150
+        "value": null
       },
       "fullPodDeployment": {
         "value": "no"

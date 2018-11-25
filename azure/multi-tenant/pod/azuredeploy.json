@@ -39,8 +39,8 @@
         },
         "StorageServerVmSize": {
             "type": "string",
+            "defaultValue": "Standard_B2",
             "allowedValues": [
-                "Standard_B1ms",
                 "Standard_B2"
             ],
             "metadata": {
@@ -49,11 +49,11 @@
         },
         "StorageServerDataDiskSizeGB": {
             "type": "int",
-            "defaultValue": 250,
-            "minValue": 100,
+            "defaultValue": 256,
+            "minValue": 32,
             "maxValue": 2048,
             "metadata": {
-                "description": "The size of the virtual machines used when provisioning"
+                "description": "The size of the Data Disk used when provisioning"
             }
         },
         "indexVirtualMachineBaseName": {
@@ -79,8 +79,8 @@
         },
         "indexDataDiskSizeGB": {
             "type": "int",
-            "defaultValue": 150,
-            "minValue": 150,
+            "defaultValue": 128,
+            "minValue": 32,
             "maxValue": 1024,
             "metadata": {
                 "description": "Size of the data disk to be attached to VMs"
@@ -112,8 +112,7 @@
         "remoteProviderVmSize": {
             "type": "string",
             "allowedValues": [
-                "Standard_B2ms",
-                "Standard_D2s_v3"
+                "Standard_B2ms"
             ],
             "metadata": {
                 "description": "The size of the virtual machines for the Remote Provider server"
@@ -282,8 +281,8 @@
                     "multitenantnipeLdapPassword": {
                         "value": "[parameters('dbLdapNetmailUserPassword')]"
                     },
-                    "zookeeperUrl": {
-                        "value": "[concat(reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value,':31000')]"
+                    "zookeeperIp": {
+                        "value": "[reference('linkedTemplateIndex').outputs.zookeeperIpAddress.value]"
                     },
                     "vmSize": {
                         "value": "[parameters('remoteProviderVmSize')]"
