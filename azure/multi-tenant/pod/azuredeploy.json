@@ -14,17 +14,6 @@
                 "description": "Password for the Admin User account for the Windows and Linux Servers to be deployed in your POD"
             }
         },
-        "StorageServerWindowsOSVersion": {
-            "type": "string",
-            "defaultValue": "2016-Datacenter",
-            "allowedValues": [
-                "2012-R2-Datacenter",
-                "2016-Datacenter"
-            ],
-            "metadata": {
-                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
-            }
-        },
         "StorageServerVmSize": {
             "type": "string",
             "defaultValue": "Standard_B2s",
@@ -150,7 +139,7 @@
                         "value": "[parameters('OSAdminPassword')]"
                     },
                     "windowsOSVersion": {
-                        "value": "[parameters('StorageServerWindowsOSVersion')]"
+                        "value": "2016-Datacenter"
                     },
                     "vmSize": {
                         "value": "[parameters('StorageServerVmSize')]"
