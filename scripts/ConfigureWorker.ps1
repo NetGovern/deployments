@@ -76,6 +76,15 @@ If ( Test-Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" ) {
     Rename-Item -Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" -NewName "eclients.do_not_use"
 }
 
+# Allow Port for MAOpen
+New-NetFirewallRule `
+    -DisplayName "Netmail_Ports_MAOpen_8585" `
+    -Direction Inbound `
+    -Profile 'Domain', 'Private' `
+    -Action Allow `
+    -Protocol TCP `
+    -LocalPort 8585
+
 #Restart Netmail services
 Restart-Service -Name NetmailLauncherService
 Write-Output "Finished"

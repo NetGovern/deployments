@@ -245,6 +245,15 @@ $output_openssl = & $env:NETMAIL_BASE_DIR\sbin\openssl.exe req -newkey rsa:2048 
 
 Write-Log $output_openssl $logfile
 
+# Allow Port for MAOpen
+New-NetFirewallRule `
+    -DisplayName "Netmail_Ports_MAOpen_8585" `
+    -Direction Inbound `
+    -Profile 'Domain', 'Private' `
+    -Action Allow `
+    -Protocol TCP `
+    -LocalPort 8585
+
 Write-Log "Reconfigure unused services" $logfile
 $postgres_disable_output = & sc.exe config "postgresql-9.3" start=demand | Out-String
 Write-Log $postgres_disable_output $logfile
