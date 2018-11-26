@@ -249,10 +249,12 @@ Write-Log $output_openssl $logfile
 New-NetFirewallRule `
     -DisplayName "Netmail_Ports_MAOpen_8585" `
     -Direction Inbound `
-    -Profile 'Domain', 'Private' `
+    -Profile 'Domain', 'Private', 'Public' `
     -Action Allow `
     -Protocol TCP `
     -LocalPort 8585
+
+Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
 
 Write-Log "Reconfigure unused services" $logfile
 $postgres_disable_output = & sc.exe config "postgresql-9.3" start=demand | Out-String

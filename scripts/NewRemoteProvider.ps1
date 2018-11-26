@@ -72,7 +72,9 @@ Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
 New-NetFirewallRule `
     -DisplayName "Netmail_Ports_RemoteProvider_8443-8495_and_8888-8940" `
     -Direction Inbound `
-    -Profile 'Domain', 'Private' `
+    -Profile 'Domain', 'Private', 'Public' `
     -Action Allow `
     -Protocol TCP `
     -LocalPort 8443-8495, 8888-8940
+
+Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private

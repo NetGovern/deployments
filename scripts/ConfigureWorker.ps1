@@ -80,10 +80,12 @@ If ( Test-Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" ) {
 New-NetFirewallRule `
     -DisplayName "Netmail_Ports_MAOpen_8585" `
     -Direction Inbound `
-    -Profile 'Domain', 'Private' `
+    -Profile 'Domain', 'Private', 'Public' `
     -Action Allow `
     -Protocol TCP `
     -LocalPort 8585
+
+Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
 
 #Restart Netmail services
 Restart-Service -Name NetmailLauncherService
