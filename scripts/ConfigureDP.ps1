@@ -111,8 +111,8 @@ $xgwxmlv_cfg = $xgwxmlv_cfg -replace "SMTP.server=.+", "SMTP.server=$smtp_server
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "SMTP.port=.+", "SMTP.port=$smtp_port"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "mopen.host=.+", "mopen.host=$ipaddress"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.enabled=.+", "cloud.enabled=true"
-$xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.nipe_list=.+", "cloud.nipe_list=http://$($ipaddress):8088"
-$xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.white_list=.+", "cloud.white_list=$ipaddress,$rp_server_address"
+$xgwxmlv_cfg = $xgwxmlv_cfg -replace "^(?!#)cloud.nipe_list=+", "cloud.nipe_list=http://$($ipaddress):8088"
+$xgwxmlv_cfg = $xgwxmlv_cfg -replace "^(?!#)cloud.white_list=+", "cloud.white_list=$ipaddress,$rp_server_address"
 
 #Replacing values with same values from NIPE's edir.properties
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.host=.+", `
@@ -123,6 +123,9 @@ $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.port=.+", `
     "edir.port=$(((Select-String 'edir.port=' $edir_properties_nipe_master).Line -split '=',2)[1])"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.container=.+", `
     "edir.container=$(((Select-String 'edir.container=' $edir_properties_nipe_master).Line -split '=',2)[1])"
+$xgwxmlv_cfg = $xgwxmlv_cfg -replace "edir.ssl=.+", `
+    "edir.ssl=$(((Select-String 'edir.ssl=' $edir_properties_nipe_master).Line -split '=',2)[1])"
+
 
 $eclients_password = "$(((Select-String 'edir.loginpwdclear=' $edir_properties_nipe_master).Line -split '=',2)[1])"
 $eclients_password_encrypted = ( & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-edir\InstallUtils.exe mode=enc value="$eclients_password").trim()
