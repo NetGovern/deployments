@@ -75,7 +75,8 @@ $ipaddress = (Test-Connection -ComputerName $env:COMPUTERNAME -Count 1 | Select-
 
 $date = Get-Date -f yyyyMMdd_hh_mm_ss
 $logfile = ".\$date`_MasterSetupWizard_log.txt"
-$postgresql_user_password = (GeneratePassword 8)
+$postgresql_user_password = (GeneratePassword 16)
+Write-Log $postgresql_user_password $logfile
 $eclients_password = GetRandomEclients
 $postgresql_user_name = "usr_$tenant_id".ToLower()
 $postgresql_db_name = $($tenant_id).ToLower()

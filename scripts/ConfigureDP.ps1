@@ -111,7 +111,7 @@ $xgwxmlv_cfg = $xgwxmlv_cfg -replace "SMTP.server=.+", "SMTP.server=$smtp_server
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "SMTP.port=.+", "SMTP.port=$smtp_port"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "mopen.host=.+", "mopen.host=$ipaddress"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "cloud.enabled=.+", "cloud.enabled=true"
-$xgwxmlv_cfg = $xgwxmlv_cfg -replace "^(?!#)cloud.nipe_list=+", "cloud.nipe_list=http://$($ipaddress):8088"
+$xgwxmlv_cfg = $xgwxmlv_cfg -replace "^(?!#)cloud.nipe_list=+", "cloud.nipe_list=http://$($rp_server_address):8088"
 $xgwxmlv_cfg = $xgwxmlv_cfg -replace "^(?!#)cloud.white_list=+", "cloud.white_list=$ipaddress,$rp_server_address"
 
 #Replacing values with same values from NIPE's edir.properties

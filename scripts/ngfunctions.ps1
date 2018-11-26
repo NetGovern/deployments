@@ -8,7 +8,7 @@ function GeneratePassword {
         [Parameter()]
         [int]$lenght = 8 #Default lenght
     )
-    $chars = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()'
+    $chars = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     return (1..$lenght | ForEach-Object {'{0:X}' -f (Get-Random -InputObject $chars ) }) -join ''
 }
 function GetTimeLdapFormat {
