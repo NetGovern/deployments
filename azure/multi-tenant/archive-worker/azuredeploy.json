@@ -31,6 +31,12 @@
                 "description": "The size of the virtual machines used when provisioning"
             }
         },
+        "masterIPAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "IP Address of the target Archive Master."
+            }
+        },
         "masterAdminUsername": {
             "type": "string",
             "metadata": {
@@ -41,12 +47,6 @@
             "type": "securestring",
             "metadata": {
                 "description": "Password to access the the target Archive Master."
-            }
-        },
-        "masterIPAddress": {
-            "type": "string",
-            "metadata": {
-                "description": "IP Address of the target Archive Master."
             }
         },
         "virtualNetworkName": {
