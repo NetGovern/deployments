@@ -79,7 +79,7 @@ $postgresql_user_password = (GeneratePassword 16)
 Write-Log $postgresql_user_password $logfile
 $eclients_password = GetRandomEclients
 $postgresql_user_name = "usr_$tenant_id".ToLower()
-$postgresql_db_name = $($tenant_id).ToLower()
+$postgresql_db_name = "db_$tenant_id".ToLower()
 
 # Setting up parameters dict
 $tokens_coll = @{}
@@ -138,10 +138,25 @@ $ldif_filepath_name = ".\$tenant_id.ldif"
 Set-Content -Value $ldif_content_encoded -Path $ldif_filepath_name
 
 #Apply LDIF to LDAP
+
+# Test ldap connectivity
+$ldap_conn = TestLDAPConn -ldap_server $ldap_server -ldap_admin_dn $ldap_admin_dn -ldap_admin_password $ldap_admin_password
+if ($ldap_conn -eq 0) {
+    $ldap_uri = "ldap://$ldap_server"
+} else {
+    $ldap_conn = TestLDAPConn -ldap_server $ldap_server -ldap_admin_dn $ldap_admin_dn -ldap_admin_password $ldap_admin_password -ssl
+    if ($ldap_conn -eq 0) {
+        $ldap_uri = "ldaps://$ldap_server"
+    } else {
+        Write-Log "Cannot connect to ldap nor ldaps" $logfile
+        Exit 1
+    }
+}
+
 Write-Log "Applying Main ldif" $logfile 
 [System.Environment]::SetEnvironmentVariable("LDAPTLS_REQCERT","never")
 $ldif_output = & $env:NETMAIL_BASE_DIR\openldap\ldapadd.exe `
-    -x -D $ldap_admin_dn -w $ldap_admin_password -H ldaps://$ldap_server -f $ldif_filepath_name `
+    -x -D $ldap_admin_dn -w $ldap_admin_password -H $ldap_uri -f $ldif_filepath_name `
     | Out-String
 Write-Log $ldif_output $logfile
 

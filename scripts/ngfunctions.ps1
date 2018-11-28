@@ -1,3 +1,73 @@
+function TestLDAPConn {
+    Param (
+        [Parameter(Mandatory = $True)]
+        [string]$ldap_server,
+        [Parameter(Mandatory = $True)]
+        [string]$ldap_admin_dn,
+        [Parameter(Mandatory = $True)]
+        [string]$ldap_admin_password,
+        [Parameter()]
+        [switch]$ssl
+
+    )
+
+    [System.Environment]::SetEnvironmentVariable("LDAPTLS_REQCERT","never")
+    $ldap_whoami = "$env:NETMAIL_BASE_DIR\openldap\ldapwhoami.exe"
+    if ($ssl) {
+        $ldap_uri = "ldaps://$ldap_server"
+    } else {
+        $ldap_uri = "ldap://$ldap_server"
+    }
+    
+    $test_ldap_conn = @(
+        "-vvv", 
+        "-H", 
+        $ldap_uri, 
+        "-D", 
+        $ldap_admin_dn, 
+        "-x", 
+        "-w", 
+        $ldap_admin_password
+    )
+
+    $p = Start-Process -FilePath $ldap_whoami -ArgumentList $test_ldap_conn -Wait -NoNewWindow -PassThru
+    return $p.ExitCode
+}
+
+function ParseEdirProperties {
+    Param (
+        [Parameter(Mandatory = $True)]
+        [string]$edir_properties_path
+    )
+    $ldap_settings = @{}
+    $edir_properties = Get-Content "$edir_properties_path"
+    $ldap_settings['host'] = (($edir_properties | Select-String 'edir.host=').Line -split '=', 2)[1]
+    $ldap_settings['port'] = (($edir_properties | Select-String 'edir.port=').Line -split '=', 2)[1]
+    $ldap_settings['logindn'] = (($edir_properties | Select-String 'edir.logindn=').Line -split '=',2)[1]
+    $ldap_settings['loginpwdclear'] = (($edir_properties | Select-String 'edir.loginpwdclear=').Line -split '=',2)[1]
+    $ldap_settings['edir_container'] = (($edir_properties | Select-String 'edir.container=').Line -split '=', 2)[1]
+    $ldap_settings['tenant_id'] = [regex]::match($ldap_settings['edir_container'], ".o=(.*?),o=netmail").Groups[1].Value
+    return $ldap_settings
+}
+function ParseSQLConnString {
+    Param (
+        [Parameter(Mandatory = $True)]
+        [string]$db_conn_string
+    )
+    $db_conn_array = $db_conn_string -split ';'
+    $db_conn_array = $db_conn_array[0..($db_conn_array.count - 2)]
+
+    $db_conn_object = @{}
+    $db_conn_array | foreach {
+        if ($_.tostring().contains('=')) {
+            $db_conn_object[($_ -split "=")[0].ToLower()] = ($_ -split "=")[1]
+        }
+        else {
+            $db_conn_object['port'] = $_
+        }
+    }
+    return $db_conn_object
+}
 function GetRandomEclients {
     $chars = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     return (1..127 | ForEach-Object {'{0:X}' -f (Get-Random -InputObject $chars ) }) -join ''
