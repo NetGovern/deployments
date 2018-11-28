@@ -246,14 +246,13 @@ $output_openssl = & $env:NETMAIL_BASE_DIR\sbin\openssl.exe req -newkey rsa:2048 
 
 Write-Log $output_openssl $logfile
 
-# Allow Port for MAOpen
+# Allow Local Subnet
 New-NetFirewallRule `
-    -DisplayName "Netmail_Ports_MAOpen_8585" `
+    -DisplayName "Netmail_Allow_Local_Subnet" `
     -Direction Inbound `
     -Profile 'Domain', 'Private', 'Public' `
     -Action Allow `
-    -Protocol TCP `
-    -LocalPort 8585
+    -RemoteAddress LocalSubnet
 
 Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
 

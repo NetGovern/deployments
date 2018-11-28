@@ -68,7 +68,7 @@ $netmail_properties | Out-File -FilePath "C:\Program Files (x86)\Messaging Archi
 # Allow SMB traffic
 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
 
-# Allow 50 Ports for Remote Provider (SSL and non SSL)
+# Allow a pool of 50 Ports for Remote Provider (SSL and non SSL)
 New-NetFirewallRule `
     -DisplayName "Netmail_Ports_RemoteProvider_8443-8495_and_8888-8940" `
     -Direction Inbound `
@@ -76,5 +76,13 @@ New-NetFirewallRule `
     -Action Allow `
     -Protocol TCP `
     -LocalPort 8443-8495, 8888-8940
+
+# Allow Local Subnet
+New-NetFirewallRule `
+    -DisplayName "Netmail_Allow_Local_Subnet" `
+    -Direction Inbound `
+    -Profile 'Domain', 'Private', 'Public' `
+    -Action Allow `
+    -RemoteAddress LocalSubnet
 
 Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
