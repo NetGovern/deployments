@@ -7,8 +7,8 @@ This script adds a worker node to a multitenant node master
 The script should run from an deployed Archive VM, it needs to be able to access the Master Administrative share C$.
 
 .EXAMPLE
-.\ConfigureWorker.ps1 -master_server_address 1.1.1.1 -master_admin_user administrator -master_admin_password ThePassword
-
+.\ConfigureWorker.ps1 -master_server_address 1.1.1.1 -master_admin_user administrator `
+    -master_admin_password ThePassword 
 
 #>
 
@@ -21,8 +21,35 @@ Param(
     [string]$master_admin_password
 )
 
+Set-Location $PSScriptRoot
+
+# Allow Local Subnet
+New-NetFirewallRule `
+    -DisplayName "Netmail_Allow_Local_Subnet" `
+    -Direction Inbound `
+    -Profile 'Domain', 'Private', 'Public' `
+    -Action Allow `
+    -RemoteAddress LocalSubnet
+
 # Setting up self generated variables
 $ipaddress = (Test-Connection -ComputerName $env:COMPUTERNAME -Count 1 | Select-Object IPV4Address).IPV4Address
+Write-Output "Configure CFS Cluster" 
+$cfs_conf_test = Test-Path "$env:NETMAIL_BASE_DIR\etc\cfs.conf"
+if ( $cfs_conf_test ) {
+    $cfs_conf = ((Get-content $env:NETMAIL_BASE_DIR\etc\cfs.conf) -join "`n" | ConvertFrom-Json).psobject.properties
+    if ($cfs_conf['ip'].Value.split(':')[0] -eq $ipaddress) {
+        Write-Output "CFS Cluster already configured, skipping"
+    }
+    else {
+        Write-Output "Create New CFS Cluster" 
+        & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-ConfigureCFS.bat new $ipaddress
+    }
+}
+else {
+    Write-Output "Create New CFS Cluster" 
+    & $env:NETMAIL_BASE_DIR\etc\scripts\setup\Win-ConfigureCFS.bat new $ipaddress
+}
+
 $master_admin_secure_string_password = ConvertTo-SecureString $master_admin_password -AsPlainText -Force
 $master_credentials = new-object -typename System.Management.Automation.PSCredential -argumentlist $master_admin_user, $master_admin_secure_string_password
 
@@ -47,7 +74,6 @@ Set-Content -Value 'group set "Netmail Indexer" "Runs Netmail Indexing services"
 Add-Content -Value 'start -name indexer "C:\Program Files (x86)\Messaging Architects\Netmail WebAdmin\..\Nipe\IndexerService.exe"' `
     -Path $50_indexer_path
 
-Remove-PSDrive -Name MASTER
 
 Write-Output "Configuring Open Thread Pool"
 #Create "55-open.conf"
@@ -76,16 +102,7 @@ If ( Test-Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" ) {
     Rename-Item -Path "$env:NETMAIL_BASE_DIR\var\dbf\eclients.dat" -NewName "eclients.do_not_use"
 }
 
-# Allow Port for MAOpen
-New-NetFirewallRule `
-    -DisplayName "Netmail_Ports_MAOpen_8585" `
-    -Direction Inbound `
-    -Profile 'Domain', 'Private', 'Public' `
-    -Action Allow `
-    -Protocol TCP `
-    -LocalPort 8585
-
-Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
+Remove-PSDrive -Name MASTER
 
 #Restart Netmail services
 Restart-Service -Name NetmailLauncherService
