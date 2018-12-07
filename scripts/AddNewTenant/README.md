@@ -40,7 +40,11 @@ Or
 
 ---
 
-### Example of parameters used to run the configuration wizard 
+### Running the scripts
+The main script that drives the installation is *MasterSetupWizard.ps1*
+It will call the rest of the scripts as needed.
+
+Example of parameters used to run the configuration wizard 
 ```
 .\MasterSetupWizard.ps1 -ldap_server 1.1.1.1 `
     -ldap_admin_dn 'cn=netmail,cn=system,o=netmail' `
@@ -59,3 +63,8 @@ Or
     -ma_notify_email 'notify@mydomain-on-o365.com'
 
 ```
+
+The end result will be a master ready with a working UI interface (login as **cloud\cloudadmin**), ready to be configured with Locations, Jobs, etc.  
+
+
+The Netmail search site will also be created at the Remote Provider Node.  In order for the new site to start working, a manual service restart is needed at the Remote Provider service.  It might affect the existing working sites, this is why it is not restarted automatically with this script.
