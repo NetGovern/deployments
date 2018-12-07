@@ -37,9 +37,9 @@ Param(
     [Parameter()]
     [string]$postgresql_server,
     [Parameter()]
-    [string]$postgresql_port,
+    [string]$postgresql_port = "5432",
     [Parameter()]
-    [string]$postgresql_admin_user,
+    [string]$postgresql_admin_user = "postgres",
     [Parameter()]
     [string]$postgresql_admin_password,
     [Parameter()]
@@ -268,8 +268,6 @@ New-NetFirewallRule `
     -Profile 'Domain', 'Private', 'Public' `
     -Action Allow `
     -RemoteAddress LocalSubnet
-
-Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
 
 Write-Log "Reconfigure unused services" $logfile
 $postgres_disable_output = & sc.exe config "postgresql-9.3" start=demand | Out-String
