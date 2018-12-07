@@ -31,7 +31,7 @@ First of all, we need to gather the network and credentials information for the 
 Or
 
 
-### You can ownload (Right-Click each link and select "Save As...") the following scripts/files to the same location in the new archive master VM to be deployed.  Make sure to Unblock them by right clicking on the downloaded files and choosing "Unblock"
+### You can download (Right-Click each link and select "Save As...") the following scripts/files to the same location in the new archive master VM to be deployed.  Make sure to Unblock them by right clicking on the downloaded files and choosing "Unblock"
 
 * <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/MasterSetupWizard.ps1" target="_blank">MasterSetupWizard.ps1</a>
 * <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/basedata.ps1" target="_blank">basedata.ps1</a>
@@ -44,18 +44,18 @@ Or
 ```
 .\MasterSetupWizard.ps1 -ldap_server 1.1.1.1 `
     -ldap_admin_dn 'cn=netmail,cn=system,o=netmail' `
-    -ldap_admin_password 'TheLdapPassword' `
+    -ldap_admin_password TheLdapPassword `
     -zookeeper_ip 2.2.2.2 `
     -postgresql_server 3.3.3.3 `
-    -postgresql_admin_password 'ThePostgresPassword' `
+    -postgresql_admin_password ThePostgresPassword `
     -tenant_id new_tenant `
-    -netmail_password 'TheNetmailPassword' `
+    -netmail_password 'TheNetmailPa$$word' `
     -remote_provider_ip_address 4.4.4.4 `
-    -remote_provider_admin_user 'administrator' `
-    -remote_provider_password 'TheRemoteProviderPassword' `
+    -remote_provider_admin_user administrator `
+    -remote_provider_password TheRemoteProviderPassword `
     -smtp_server 5.5.5.5 `
     -o365_user 'admin@mydomain-on-o365.com' `
-    -o365_password 'TheO365Password' `
+    -o365_password TheO365Password `
     -ma_notify_email 'notify@mydomain-on-o365.com'
 
 ```
