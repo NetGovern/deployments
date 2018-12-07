@@ -4,22 +4,22 @@ This document describes the procedure to add a new tenant to an existing "Pod".
 
 First of all, we need to gather the network and credentials information for the shared layer infrastructure that defines our existing Pod:  
 
-* LDAP Server IP address, Admin DN and password:  
+* **LDAP Server IP address, Admin DN and password**:  
     They are needed to create the subtree that will contain most of the new tenant configuration
-* Zookeeper/Solr/Index IP address:  
+* **Zookeeper/Solr/Index IP address**:  
     The Zookeeper IP address, usually the first node if more than 1 index has been deployed
-* PostgreSQL server IP address, port (if not 5432), admin user and password:
+* **PostgreSQL server IP address, port (if not 5432), admin user and password**:
     It will be used to create and configure the DB and credentials that will be used by the new tenant
-* Tenant ID: 
+* **Tenant ID**: 
     The unique tenant ID. It should match the one present in the new license.  
-* Netmail Password: 
+* **Netmail Password**: 
     The new password that the new admin account will have for the UI
-* Remote Provider IP address, admin account and password:
+* **Remote Provider IP address, admin account and password**:
     The Remote Provider where the new Netmail Search web application will be created.  The Administrator account has to be able to map the administrative C$ shared drive.
-* Smtp server address: The smtp server used by netmail search
-* O365 Credentials: (Not mandatory, it can be changed in the UI after)  
+* **Smtp server address**: The smtp server used by netmail search
+* **O365 Credentials**: (Not mandatory, it can be changed in the UI after)  
     The login information to access O365 Porwershell URL.
-* Notify: (Not mandatory, it can be changed in the UI after)  
+* **Notify**: (Not mandatory, it can be changed in the UI after)  
     The email to receive job status notifications
 
 
