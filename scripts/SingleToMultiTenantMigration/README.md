@@ -5,8 +5,8 @@ This document outlines the procedure to migrate a single tenant Master configura
 *Note: Migration of crawler jobs and crawler locations is not supported*
 
 ## On the MultiTenant Environment
-Deploy a new Master using the deployment scripts.  
-A backup will be restored to copy most of the configuration.
+Deploy a new Master using the deployment scripts as decribed here: <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/scripts/AddNewTenant" target="_blank">AddNewTenant</a>  
+Run a syncAB to verify connectivity
 
 ## On the Single Tenant Master
 Create a Backup of your existing system using the UI:  
