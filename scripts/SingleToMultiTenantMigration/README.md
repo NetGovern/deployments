@@ -25,11 +25,9 @@ Users**
 <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/SingleToMultiTenantMigration/SingleToMulti.zip" target="_blank">SingleToMulti.zip</a> 
 
 
-* Run the script *Backup.ps1* in powershell.  It will create backups in a folder called *backup*.  
-Copy the scripts with the backup folder to the newly deployed Multitenant Master.
-
 ## On the new Multitenant Master
-* Restore the backup using the UI. 
+* Run the script *Backup.ps1* in powershell.  It will create backups in a folder called *backup*. 
+* Restore the backup using the UI, you need to provide the file downloaded from the UI in the single tenant system. 
 * Stop the Platform Services
 * Run the script called: *CompleteMultitenantRestore.ps1*
 * Start the Platform Services
