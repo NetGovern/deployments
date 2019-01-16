@@ -27,9 +27,9 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_B2s",
+            "defaultValue": "Standard_DS2_v2",
             "allowedValues": [
-                "Standard_B2s"
+                "Standard_DS2_v2"
             ],
             "metadata": {
                 "description": "The size of the virtual machines used when provisioning"
@@ -66,15 +66,15 @@
         }
     },
     "variables": {
-        "nicName": "SharedStorage-NIC",
-        "publicIPAddressName": "SharedStorage-PublicIP",
+        "nicName": "SharedStorage01-NIC",
+        "publicIPAddressName": "SharedStorage01-PublicIP",
         "publicIPAddressType": "Dynamic",
-        "vmName": "SharedStorage",
+        "vmName": "SharedStorage01",
         "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
-        "networkSecurityGroupName": "SharedStorage-NSG",
+        "networkSecurityGroupName": "SharedStorage01-NSG",
         "location":"[resourceGroup().location]",
-        "storageAccountType": "Standard_LRS",
+        "storageAccountType": "Premium_LRS",
         "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
     },
     "resources": [
@@ -102,7 +102,7 @@
             }
         },
         {
-            "apiVersion": "2016-03-30",
+            "apiVersion": "2016-09-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
             "location": "[variables('location')]",
@@ -124,7 +124,8 @@
                             }
                         }
                     }
-                ]
+                ],
+                "enableAcceleratedNetworking": true
             }
         },
         {
