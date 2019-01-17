@@ -118,7 +118,7 @@
                         "publisher": "netmail",
                         "offer": "netmail-search",
                         "sku": "c2a",
-                        "version": "latest"
+                        "version": "1.0.3"
                     },
                     "osDisk": {
                         "createOption": "FromImage", 

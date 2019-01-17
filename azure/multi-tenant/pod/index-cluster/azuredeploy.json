@@ -96,7 +96,7 @@
                         "publisher": "netmail",
                         "offer": "netmail-search",
                         "sku": "c2i",
-                        "version": "latest"
+                        "version": "1.0.2"
                     },
                     "osDisk": {
                         "createOption": "FromImage",

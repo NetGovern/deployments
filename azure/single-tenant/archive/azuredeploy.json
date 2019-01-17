@@ -23,25 +23,9 @@
         },
         "vmSize": {
             "type": "string",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_B2s",
-                "Standard_B8ms",
-                "Standard_D4s_v3",
-                "Standard_D8s_v3",
-                "Standard_D16s_v3"
-            ],
+            "defaultValue": "Standard_B2s",
             "metadata": {
                 "description": "The size of the virtual machines used when provisioning"
-            }
-        },
-        "dataDiskSizeGB": {
-            "type": "int",
-            "defaultValue": 150,
-            "minValue": 150,
-            "maxValue": 1024,
-            "metadata": {
-                "description": "Size in GB of the new empty data disk attached"
             }
         },
         "virtualNetworkName": {
@@ -68,9 +52,7 @@
         "SecGroupName": "[concat(parameters('vmName'), '-NSG')]",
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
-        "storageAccountType": "Premium_LRS",
-        "cmdInitializeNewDataDisk": "powershell -ExecutionPolicy Unrestricted -File InitializeNewDataDisk.ps1 -DiskLabel DataDisk1",
-        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
+        "storageAccountType": "Standard_LRS"
     },
     "resources": [
         {
@@ -108,21 +90,14 @@
                         "publisher": "netmail",
                         "offer": "netmail-search",
                         "sku": "c2a",
-                        "version": "latest"
+                        "version": "1.0.3"
                     },
                     "osDisk": {
                         "createOption": "FromImage",
                         "managedDisk": {
                             "storageAccountType": "[variables('storageAccountType')]"
                         }
-                    },
-                    "dataDisks": [
-                        {
-                            "diskSizeGB": "[parameters('dataDiskSizeGB')]",
-                            "lun": 0,
-                            "createOption": "Empty"
-                        }
-                    ]
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -200,49 +175,8 @@
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "3389"
                         }
-                    },
-                    {
-                        "name": "https",
-                        "properties": {
-                            "priority": 1020,
-                            "protocol": "TCP",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceApplicationSecurityGroups": [],
-                            "destinationApplicationSecurityGroups": [],
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "443"
-                        }
                     }
                 ]
-            }
-        },
-        {
-            "apiVersion": "2015-06-15",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'),'/extensions')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-            ],
-            "tags": {
-                "displayName": "InitializeNewDisk"
-            },
-            "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.9",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'InitializeNewDataDisk.ps1')]"
-                    ]
-                },
-                "protectedSettings": {
-                    "commandToExecute": "[variables('cmdInitializeNewDataDisk')]"
-                }
             }
         }
     ]
