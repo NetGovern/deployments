@@ -3,7 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "virtualMachineBaseName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Base Name, this will create the VMs with <BaseName>x, being x the number of VMs to deploy"
+            }
         },
         "osAdminUsername": {
             "type": "string",
@@ -20,21 +23,13 @@
         },
         "virtualMachineSize": {
             "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_B4ms",
-                "Standard_B8ms",
-                "Standard_D4s_v3",
-                "Standard_D8s_v3",
-                "Standard_D16s_v3"
-            ]
+            "defaultValue": "Standard_B2ms"
         },
         "count": {
             "type": "int",
             "defaultValue": 1,
             "metadata": {
-                "description": "Number of VMs to deploy."
+                "description": "Number of VMs to deploy"
                 }
         },
         "virtualNetworkName": {
@@ -42,12 +37,6 @@
         },
         "subnetName": {
             "type": "string"
-        },
-        "dataDiskSizeGB": {
-            "type": "int",
-            "defaultValue": 150,
-            "minValue": 150,
-            "maxValue": 1024
         }
     },
     "variables": {
@@ -55,8 +44,7 @@
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
-        "storageAccountType": "Premium_LRS",
-        "scriptsLocationUri": "https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/"
+        "storageAccountType": "Standard_LRS"
     },
     "resources": [
         {
@@ -94,21 +82,14 @@
                         "publisher": "netmail",
                         "offer": "netmail-search",
                         "sku": "c2i",
-                        "version": "latest"
+                        "version": "1.0.2"
                     },
                     "osDisk": {
                         "createOption": "fromImage",
                         "managedDisk": {
                             "storageAccountType": "[variables('storageAccountType')]"
                         }
-                    },
-                    "dataDisks": [
-                        {
-                            "diskSizeGB": "[parameters('dataDiskSizeGB')]",
-                            "lun": 0,
-                            "createOption": "Empty"
-                        }
-                    ]
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -175,33 +156,6 @@
             },
             "sku": {
                 "name": "[variables('publicIpAddressSku')]"
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('virtualMachineBaseName'), copyIndex(1),'/extensions')]",
-            "apiVersion": "2017-03-30",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineBaseName'), copyIndex(1))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "CustomScript",
-                "typeHandlerVersion": "2.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {},
-                "protectedSettings": {
-                    "commandToExecute": "[concat('sh azure_configure_new_data_disk.sh && sh upgrade_rpms.sh -v 6.2.1.844 -i')]",
-                    "fileUris": [
-                        "[concat(variables('scriptsLocationUri'),'azure_configure_new_data_disk.sh')]",
-                        "[concat(variables('scriptsLocationUri'),'upgrade_rpms.sh')]"
-                    ]
-                }
-            },
-            "copy": {
-                "name": "IndexCopy",
-                "count": "[parameters('count')]"
             }
         },
         {

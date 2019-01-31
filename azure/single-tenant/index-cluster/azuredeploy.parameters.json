@@ -8,9 +8,9 @@
       "osAdminUsername": {
         "value": "azureadmin"
       },
-    "osAdminPassword": {
+      "osAdminPassword": {
         "value": null
-    },
+      },
       "virtualMachineSize": {
         "value": null
       },
@@ -22,9 +22,6 @@
       },
       "subnetName": {
         "value": null
-      },
-      "dataDiskSizeGB": {
-        "value": 150
       }
     }
   }
