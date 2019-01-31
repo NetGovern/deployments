@@ -90,7 +90,7 @@
                         "publisher": "netmail",
                         "offer": "netmail-search",
                         "sku": "c2a",
-                        "version": "1.0.3"
+                        "version": "1.0.5"
                     },
                     "osDisk": {
                         "createOption": "FromImage",

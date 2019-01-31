@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "vmName": {
-        "value": "Master"
+        "value": null
       },
       "adminUsername": {
         "value": null
@@ -13,9 +13,6 @@
       },
       "vmSize": {
         "value": null
-      },
-      "dataDiskSizeGB": {
-        "value": "150"
       },
       "virtualNetworkName": {
         "value": null
