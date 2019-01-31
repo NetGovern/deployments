@@ -19,15 +19,7 @@
         },
         "virtualMachineSize": {
             "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_B4ms",
-                "Standard_B8ms",
-                "Standard_D4s_v3",
-                "Standard_D8s_v3",
-                "Standard_D16s_v3"
-            ]
+            "defaultValue": "Standard_B2ms"
         },
         "virtualNetworkName": {
             "type": "string"
