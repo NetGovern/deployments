@@ -361,7 +361,7 @@ $install_msi = {
     $InstallNetGovernArgument = "/c " + $path2Installbat
     $InstallNetGovernWorkingDir = "$env:TEMP\NetGovern"
     try {
-        Start-Process cmd -ArgumentList $InstallNetGovernArgument -WorkingDirectory $InstallNetGovernWorkingDir
+        Start-Process cmd -ArgumentList $InstallNetGovernArgument -WorkingDirectory $InstallNetGovernWorkingDir -ErrorAction Stop
     }
     Catch {
         Write-Output "Cannot launch install.bat"
@@ -504,7 +504,7 @@ $info_hash['index'].psobject.Properties | foreach-object {
             $output_file_name = "Index-$($node_ip)-$(Get-Date -f "MMddhhmmss").txt"
             Write-Output "`r`nStarting Index upgrade from $($_.Value) to $upgrade_version"
             try {
-                Invoke-Command -ScriptBlock $install_index | Out-File $output_file_name
+                Invoke-Command -ScriptBlock $install_index -ErrorAction Stop | Out-File $output_file_name
             }
             catch {
                 Write-Output "`r`nCannot start index upgrade at $node_ip"
@@ -526,35 +526,54 @@ $info_hash['dp'].psobject.Properties | foreach-object {
             $upgrade_me = $True
             Write-Output "`r`nStarting DP upgrade"
             Stop-Service NetmailLauncherService
-            Write-Output "Backing up existing DP folders to $($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)"
+            Write-Output "`r`nUpgrading Platform"
+            Invoke-Command -ScriptBlock $install_msi | Out-File "remoteProviderNetGovernInstallLog.txt"
+            Write-Output "Platform Upgrade finished"
+            Write-Output "`r`nBacking up existing DP folders to $($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)"
             (New-Item -Path "$($env:NETMAIL_BASE_DIR)\.." -Name "bkp_dp_$($randomstr)_$($current_version)" -ItemType "directory") | Out-Null
             $dp_folders = (Get-ChildItem -Path "$($env:NETMAIL_BASE_DIR)\.." -Directory | Where-Object {$_.FullName -match "RemoteProvider_"})
-            $backup_ok = $true
             foreach ($folder in $dp_folders) { 
+                $backup_ok = $True
                 Copy-Item -Path "$($folder.FullName)" -Recurse -Destination "$($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)"
                 if (!($?)) {
-                    Write-Output "`r`nCannot backup existing DP Folders, please run DP upgrade manually"
+                    Write-Output "`r`nCannot backup existing DP Folders, please upgrade the DP folders manually"
                     $backup_ok = $false
                 }
             }
             if ($backup_ok) { 
-                Write-Output "`r`nUpgrading NetGovern locally"
-                Invoke-Command -ScriptBlock $install_msi | Out-File "remoteProviderNetGovernInstallLog.txt"
-                Write-Output "Local Upgrade finished"
                 Write-Output "`r`nUpgrading dp folders:"
                 foreach ($folder in $dp_folders) {
                     if ($folder.Name -ne "RemoteProvider") {
-                        Write-Output "$($folder.Name)"
+                        Write-Output "`r`nProcessing: $($folder.Name)"
+                        Write-Output "Removing previous version"
+                        try { 
+                            Remove-Item $folder.FullName -Recurse -ErrorAction Stop
+                        } catch {
+                            Write-Output "Cannot delete $($folder.FullName).  Please verify that the folder is fully upgraded after the script is finished."
+                        }
+                        Write-Output "Recreating new DP version: $($folder.Name)"
                         Copy-Item -Path "$($env:NETMAIL_BASE_DIR)\..\RemoteProvider" `
                             -Destination "$($env:NETMAIL_BASE_DIR)\..\$($folder.Name)" `
-                            -Exclude @("xgwxmlv.cfg", "jetty-ssl.xml") -Force -Recurse
+                            -Force -Recurse
+                        Copy-Item -Path "$($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)\$($folder.Name)\xgwxmlv.cfg" `
+                            -Destination "$($env:NETMAIL_BASE_DIR)\..\$($folder.Name)" -Force
+                        Copy-Item -Path "$($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)\$($folder.Name)\jetty-ssl.xml" `
+                            -Destination "$($env:NETMAIL_BASE_DIR)\..\$($folder.Name)" -Force
+                        Copy-Item -Path "$($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)\$($folder.Name)\WebContent\config.xml" `
+                        -Destination "$($env:NETMAIL_BASE_DIR)\..\$($folder.Name)\WebContent" -Force
                     }
                 }
-                Write-Output "`r`nRemote Provider Upgrade finished"
             }
+            Write-Output "`r`nRemote Provider Upgrade finished"
         }
     }
 }
+
+if ($upgrade_me) {
+    Write-Output "`r`nStarting DP Service"
+    Start-Service NetmailLauncherService
+}
+
 Write-Output "`r`nStarting Archive Nodes upgrade"
 Write-Output "------------------------------"
 $archive_nodes = @()
@@ -619,16 +638,11 @@ else {
 foreach ($archive_node_to_be_started in $archive_nodes) {
     Write-Output "`r`nStarting Launcher @ $archive_node_to_be_started"
     try {
-        Invoke-Command -ScriptBlock { Start-Service NetmailLauncherService } -ComputerName $archive_node_to_be_started -Credential $admin_credentials
+        Invoke-Command -ScriptBlock { Start-Service NetmailLauncherService } -ComputerName $archive_node_to_be_started -Credential $admin_credentials -ErrorAction Stop
     }
     catch {
         Write-Output "`r`nCannot start Launcher Service at $archive_node_to_be_started"
     }
-}
-
-if ($upgrade_me) {
-    Write-Output "`r`nStarting DP Service"
-    Start-Service NetmailLauncherService
 }
 
 Write-Output "`r`n---------------"
