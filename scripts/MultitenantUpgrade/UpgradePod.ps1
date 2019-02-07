@@ -8,12 +8,12 @@ It needs windows and linux admin passwords for the nodes as well as the target v
 
 Most of the parameters names are self explanatory.  
 The option "interactive" will prompt the user to continue after displaying the discovered nodes in the pod.
-The option "discoverOnly" will not run any upgrade but it will leave a json file called my-cluster-info.json in the same folder of the script location.
+The option "discover_only" will not run any upgrade but it will leave a json file called my-cluster-info.json in the same folder of the script location.
 
 .EXAMPLE
 .\DiscoveryAndUpgrade.ps1 -windows_admin_user "Administrator" -windows_admin_password "ThePassword" `
     -linux_admin_user netmail -linux_admin_password "ThePassword" -upgrade_version "6.3.0.1454" `
-    -interactive -discoverOnly
+    -interactive -discover_only
 
 #>
 
@@ -35,9 +35,15 @@ Param(
     [Parameter()]
     [switch]$interactive,
     [Parameter()]
-    [switch]$Debugme,
+    [switch]$no_index,
     [Parameter()]
-    [switch]$discoverOnly
+    [switch]$skip_wrong_creds,
+    [Parameter()]
+    [switch]$debug_me,
+    [Parameter()]
+    [switch]$discover_only,
+    [Parameter()]
+    [switch]$test_connectivity
 )
 
 # Parameters sanity check
@@ -51,16 +57,17 @@ if ( !($windows_admin_password) ) {
     $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_windows_admin_password)
     $windows_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 }
+if ( !($no_index) ) {
+    if ( !($linux_admin_user) ) {
+        $linux_admin_user = Read-Host -Prompt "Enter a common linux user account with sudo rights on the nodes"
+    }
 
-if ( !($linux_admin_user) ) {
-    $linux_admin_user = Read-Host -Prompt "Enter a common linux user account with sudo rights on the nodes"
-}
-
-if ( !($linux_admin_password) ) {
-    $secure_string_linux_admin_password = Read-Host -Prompt `
-        "Enter the password for the linux user account with sudo rights on the nodes" -AsSecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_linux_admin_password)
-    $linux_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    if ( !($linux_admin_password) ) {
+        $secure_string_linux_admin_password = Read-Host -Prompt `
+            "Enter the password for the linux user account with sudo rights on the nodes" -AsSecureString
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_linux_admin_password)
+        $linux_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    }
 }
 
 if ( !($ldap_admin_dn) ) {
@@ -94,7 +101,7 @@ if ($available_versions -contains $upgrade_version) {
 
 Write-Output "`r`nDiscovering Nodes in the multitenant cluster"
 
-If ($Debugme) {
+If ($debug_me) {
     Write-Output "`r`nwindows: $windows_admin_user, $windows_admin_password"
     Write-Output "linux: $linux_admin_user, $linux_admin_password"
     Write-Output "ldap: $ldap_admin_dn, $ldap_admin_dn_password"
@@ -289,32 +296,33 @@ $info_json = Get-Content "$PSScriptRoot\my-cluster-info.json"
 $info_hash = @{}
 ($info_json -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $info_hash[$_.Name] = $_.Value }
 
-If ($discoverOnly) {
-    Write-Output "`r`ndiscoverOnly option was selected. The discovery file is  $PSScriptRoot\my-cluster-info.json"
+# Display info
+Write-Output "`r`n----------------------------------------------------"
+Write-Output "`r`nPlease verify the following list of discovered nodes"
+if ($unreachable_present) {
+    Write-Output "The nodes with a version number of 9.9.9.9 were found"
+    Write-Output "in LDAP but the IP address is unreachable."
+    Write-Output "They will not be upgraded."
+    Write-Output "`r`nIf they are supposed to be active, stop the script and"
+    Write-Output "try again once the missing nodes are back."
+}
+Write-Output "`r`nRemote Provider:"
+Write-Output "----------------"
+Write-Output $($info_hash).dp | Format-List
+Write-Output "`r`nArchive nodes:"
+Write-Output "--------------"
+Write-Output $($info_hash).archive | Format-List
+Write-Output "`r`nIndex nodes:"
+Write-Output "------------"
+Write-Output $($info_hash).index | Format-List
+
+If ($discover_only) {
+    Write-Output "`r`ndiscover_only option was selected. The discovery file is  $PSScriptRoot\my-cluster-info.json"
     Write-Output "Exiting"
     Exit 0
 }
 
 if ($interactive) {
-    Write-Output "`r`n----------------------------------------------------"
-    Write-Output "`r`nPlease verify the following list of discovered nodes"
-    if ($unreachable_present) {
-        Write-Output "The nodes with a version number of 9.9.9.9 were found"
-        Write-Output "in LDAP but the IP address is unreachable."
-        Write-Output "They will not be upgraded."
-        Write-Output "`r`nIf they are supposed to be active, stop the script and"
-        Write-Output "try again once the missing nodes are back."
-    }
-    Write-Output "`r`nRemote Provider:"
-    Write-Output "----------------"
-    Write-Output $($info_hash).dp | Format-List
-    Write-Output "`r`nArchive nodes:"
-    Write-Output "--------------"
-    Write-Output $($info_hash).archive | Format-List
-    Write-Output "`r`nIndex nodes:"
-    Write-Output "------------"
-    Write-Output $($info_hash).index | Format-List
-
     $confirmation = ""
     while (($confirmation -ne "y") -and ($confirmation -ne "n") -and ($confirmation -ne "yes") -and ($confirmation -ne "no")) {
         $confirmation = (Read-Host "Proceed?(yes/no)").ToLower()
@@ -402,12 +410,13 @@ $install_msi = {
     Write-Output "-----------------------------"
     Write-Output "NetGovern Installation Finished"
 }
-# Download utility for linux connectivity
-$curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
-$params = '-k', '-s', '-O', "https://netgovernpkgs.blob.core.windows.net/download/klink.exe"
-Invoke-Expression "& `"$curl_exe`" $params" 
-$klink_exe = "$PSScriptRoot\klink.exe"
-
+if (!($no_index)) {
+    # Download utility for linux connectivity
+    $curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
+    $params = '-k', '-s', '-O', "https://netgovernpkgs.blob.core.windows.net/download/klink.exe"
+    Invoke-Expression "& `"$curl_exe`" $params" 
+    $klink_exe = "$PSScriptRoot\klink.exe"
+}
 $windows_admin_password_secure_string = $windows_admin_password | ConvertTo-SecureString -AsPlainText -Force
 $admin_credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $windows_admin_user, $windows_admin_password_secure_string
 
@@ -422,60 +431,71 @@ $info_json = Get-Content "$PSScriptRoot\my-cluster-info.json"
 $info_hash = @{}
 ($info_json -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $info_hash[$_.Name] = $_.Value }
 
-# Testing OS pre requisites
-Write-Output "`r`nTesting linux credentials"
-$info_hash['index'].psobject.Properties | foreach-object {
-    $node_ip = $_.Name
-    $_.Value.psobject.properties | ForEach-Object {
-        if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
-            $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
-                "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", "sudo -n -l sudo"
-            $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-            $pinfo.FileName = ${klink_exe}
-            $pinfo.RedirectStandardError = $true
-            $pinfo.RedirectStandardOutput = $true
-            $pinfo.UseShellExecute = $false
-            $pinfo.Arguments = $klink_parameters
-            $p = New-Object System.Diagnostics.Process
-            $p.StartInfo = $pinfo
-            $p.Start() | Out-Null
-            if ( ! $p.WaitForExit(15000) ) {
-                Write-Output "${klink_exe} did not exit after 15s.  Killing process"
-                $p.kill()
-            }
-            $stdout = $p.StandardOutput.ReadToEnd()
-            if ($p.ExitCode -eq 0) {
-                if ($stdout -match "/bin/sudo") { 
-                    Write-Output "User: ${linux_admin_user} is able to connect to $node_ip and has sudo rights"
+if (!($no_index)) {
+    # Testing OS pre requisites
+    Write-Output "`r`nTesting linux credentials"
+    $info_hash['index'].psobject.Properties | foreach-object {
+        $node_ip = $_.Name
+        $_.Value.psobject.properties | ForEach-Object {
+            if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+                $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
+                    "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", "sudo -n -l sudo"
+                $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+                $pinfo.FileName = ${klink_exe}
+                $pinfo.RedirectStandardError = $true
+                $pinfo.RedirectStandardOutput = $true
+                $pinfo.UseShellExecute = $false
+                $pinfo.Arguments = $klink_parameters
+                $p = New-Object System.Diagnostics.Process
+                $p.StartInfo = $pinfo
+                $p.Start() | Out-Null
+                if ( ! $p.WaitForExit(15000) ) {
+                    Write-Output "${klink_exe} did not exit after 15s.  Killing process"
+                    $p.kill()
+                }
+                $stdout = $p.StandardOutput.ReadToEnd()
+                if ($p.ExitCode -eq 0) {
+                    if ($stdout -match "/bin/sudo") { 
+                        Write-Output "User: ${linux_admin_user} is able to connect to $node_ip and has sudo rights"
+                    } else {
+                        Write-Output "Linux credentials pre-requisites not met.  Exiting script."
+                        Write-Output "Please verify that the user ${linux_admin_user} can login to $node_ip and has sudo rights"
+                        Exit 1
+                    }
                 } else {
-                    Write-Output "Linux credentials pre-requisites not met.  Exiting script."
-                    Write-Output "Please verify that the user ${linux_admin_user} can login to $node_ip and has sudo rights"
+                    Write-Output "Cannot connect to $node_ip with user: ${linux_admin_user}"
                     Exit 1
                 }
-            } else {
-                Write-Output "Cannot connect to $node_ip with user: ${linux_admin_user}"
-                Exit 1
             }
         }
     }
 }
 Write-Output "`r`nTesting Windows credentials"
+$windows_nodes_creds_ok = @()
 $info_hash['archive'].psobject.Properties | foreach-object {
     $node_ip = $_.Name
     $_.Value.psobject.properties | ForEach-Object {
         if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
             $testSession = New-PSSession -Computer $node_ip -Credential $admin_credentials -ErrorAction SilentlyContinue
             if (-not($testSession)) {
-                Write-Output "Windows credentials pre-requisites not met.  Exiting script."
-                Write-Output "Please verify that the user ${windows_admin_user} can login to $node_ip as administrator"
-                Exit 1
+                Write-Output "Cannot establish a powershell session to $node_ip. please verify that the user ${windows_admin_user} can log in as administrator"
+                if (!($skip_wrong_creds)) {
+                    Write-Output "Windows credentials pre-requisites not met.  Exiting script."
+                    Exit 1
+                }
             }
             else {
                 Write-Output "User: ${windows_admin_user} is able to connect to $node_ip successfully"
+                $windows_nodes_creds_ok += $node_ip
                 Remove-PSSession $testSession
             }
         }
     }
+}
+
+if ($test_connectivity) { 
+    Write-Output "Script Finished - Test Connectivity only option used"
+    Exit 0
 }
 
 # Download Archive Installer
@@ -491,32 +511,34 @@ Invoke-Expression "& `"$curl_exe`" $params"
 
 $upgrade_me = $false
 $jobs = @()
-
-$info_hash['index'].psobject.Properties | foreach-object {
-    $node_ip = $_.Name
-    $_.Value.psobject.properties | ForEach-Object {
-        if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
-            $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
-                "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", `
-                "`"wget -P /tmp https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/upgrade_rpms.sh && chmod +x /tmp/upgrade_rpms.sh && sudo /tmp/upgrade_rpms.sh -v ${upgrade_version} -i && sudo systemctl restart netmail`""
-            $install_rpms_command = "& ${klink_exe} ${klink_parameters} 2>`$null"
-            $install_index = [Scriptblock]::Create($install_rpms_command)
-            $output_file_name = "Index-$($node_ip)-$(Get-Date -f "MMddhhmmss").txt"
-            Write-Output "`r`nStarting Index upgrade from $($_.Value) to $upgrade_version"
-            try {
-                Invoke-Command -ScriptBlock $install_index -ErrorAction Stop | Out-File $output_file_name
+if (!($no_index)) {
+    $info_hash['index'].psobject.Properties | foreach-object {
+        $node_ip = $_.Name
+        $_.Value.psobject.properties | ForEach-Object {
+            if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+                $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
+                    "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", `
+                    "`"wget -P /tmp https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/upgrade_rpms.sh && chmod +x /tmp/upgrade_rpms.sh && sudo /tmp/upgrade_rpms.sh -v ${upgrade_version} -i && sudo systemctl restart netmail`""
+                $install_rpms_command = "& ${klink_exe} ${klink_parameters} 2>`$null"
+                $install_index = [Scriptblock]::Create($install_rpms_command)
+                $output_file_name = "Index-$($node_ip)-$(Get-Date -f "MMddhhmmss").txt"
+                Write-Output "`r`nStarting Index upgrade from $($_.Value) to $upgrade_version"
+                try {
+                    Invoke-Command -ScriptBlock $install_index -ErrorAction Stop | Out-File $output_file_name
+                }
+                catch {
+                    Write-Output "`r`nCannot start index upgrade at $node_ip"
+                    Exit 1
+                }
+                Write-Output "Upgrade finished @ $node_ip"
             }
-            catch {
-                Write-Output "`r`nCannot start index upgrade at $node_ip"
-                Exit 1
+            if ( $($_.Name) -eq "version" -and $($_.Value) -ge $upgrade_version ) {
+                Write-Output "`r`nIndex version is $($_.Value) >= $upgrade_version)"
             }
-            Write-Output "Upgrade finished @ $node_ip"
-        }
-        if ( $($_.Name) -eq "version" -and $($_.Value) -ge $upgrade_version ) {
-            Write-Output "`r`nIndex version is $($_.Value) >= $upgrade_version)"
         }
     }
 }
+
 $info_hash['dp'].psobject.Properties | foreach-object {
     $_.Value.psobject.properties | ForEach-Object {
         if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
@@ -579,23 +601,25 @@ Write-Output "------------------------------"
 $archive_nodes = @()
 $info_hash['archive'].psobject.Properties | foreach-object {
     $node_ip = $_.Name
-    $_.Value.psobject.properties | ForEach-Object {
-        if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
-            (New-PSDrive -name TEMP -PSProvider FileSystem -Root "\\$node_ip\c$\Program Files (x86)\Messaging Architects" -Credential $admin_credentials) | Out-Null
-            if ( ! (test-path -pathtype container "TEMP:\installer") ) {
-                (New-Item -Path "TEMP:\" -Name "installer" -ItemType "directory") | Out-Null
+    if ($windows_nodes_creds_ok -contains $node_ip) {
+        $_.Value.psobject.properties | ForEach-Object {
+            if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+                (New-PSDrive -name TEMP -PSProvider FileSystem -Root "\\$node_ip\c$\Program Files (x86)\Messaging Architects" -Credential $admin_credentials) | Out-Null
+                if ( ! (test-path -pathtype container "TEMP:\installer") ) {
+                    (New-Item -Path "TEMP:\" -Name "installer" -ItemType "directory") | Out-Null
+                }
+                Write-Output "`r`nCopying installer to $node_ip"
+                Get-ChildItem $downloaded_file_path | Copy-Item -Destination "TEMP:\installer"
+                Remove-PSDrive -Name TEMP
+                $job_name = "JobAt$($node_ip)-$(Get-Date -f "MMddhhmmss")"
+                Write-Output "Starting Archive upgrade job at $node_ip"
+                (Invoke-Command -ScriptBlock $install_msi -ComputerName $node_ip -Credential $admin_credentials -AsJob -JobName $job_name) | Out-Null
+                if ($?) { 
+                    $jobs += $job_name
+                    $archive_nodes += $node_ip
+                }
+                else { Write-output "`r`nJob could not be launched at $node_ip, please run upgrade manually" }
             }
-            Write-Output "`r`nCopying installer to $node_ip"
-            Get-ChildItem $downloaded_file_path | Copy-Item -Destination "TEMP:\installer"
-            Remove-PSDrive -Name TEMP
-            $job_name = "JobAt$($node_ip)-$(Get-Date -f "MMddhhmmss")"
-            Write-Output "Starting Archive upgrade job at $node_ip"
-            (Invoke-Command -ScriptBlock $install_msi -ComputerName $node_ip -Credential $admin_credentials -AsJob -JobName $job_name) | Out-Null
-            if ($?) { 
-                $jobs += $job_name
-                $archive_nodes += $node_ip
-            }
-            else { Write-output "`r`nJob could not be launched at $node_ip, please run upgrade manually" }
         }
     }
 }
