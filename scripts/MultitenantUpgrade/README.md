@@ -42,3 +42,17 @@ The option "discoverOnly" will not run any upgrade but it will leave a json file
 ## About LDAP and Postgres
 This script does not cover any schema upgrade to LDAP nor Postgres.
 They will need to be handled manually if needed.
+
+In order to upgrade the netmail schema:
+
+1.  Download the newest schema from the following location: [netmail.schema.ldif](https://netgovernpkgs.blob.core.windows.net/download/netmail.schema.ldif)
+2. Verify the location of the schema by looking at the service configuration.  See the following example:
+```
+ cat /etc/openldap/slapd.conf
+include         /etc/openldap/schema/core.schema
+include         /etc/openldap/schema/netmail.schema.ldif
+```
+3. Stop the ldap service
+4. Make a backup of the old netmail.schema.ldif file
+5. Replace the new schema file with the one provided at the step 1
+6. Start the ldap service
