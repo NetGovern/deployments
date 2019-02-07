@@ -33,6 +33,10 @@ Param(
     [Parameter()]
     [switch]$interactive,
     [Parameter()]
+    [switch]$no_index,
+    [Parameter()]
+    [switch]$skip_wrong_creds,
+    [Parameter()]
     [switch]$Debugme,
     [Parameter()]
     [string]$upgrade_version
@@ -49,16 +53,16 @@ if ( !($windows_admin_password) ) {
     $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_windows_admin_password)
     $windows_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 }
-
-if ( !($linux_admin_user) ) {
-    $linux_admin_user = Read-Host -Prompt "Enter a common linux user account with sudo rights on the nodes"
-}
-
-if ( !($linux_admin_password) ) {
-    $secure_string_linux_admin_password = Read-Host -Prompt `
-        "Enter the password for the linux user account with sudo rights on the nodes" -AsSecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_linux_admin_password)
-    $linux_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+if ( !($no_index) ) {
+    if ( !($linux_admin_user) ) {
+        $linux_admin_user = Read-Host -Prompt "Enter a common linux user account with sudo rights on the nodes"
+    }
+    if ( !($linux_admin_password) ) {
+        $secure_string_linux_admin_password = Read-Host -Prompt `
+            "Enter the password for the linux user account with sudo rights on the nodes" -AsSecureString
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_linux_admin_password)
+        $linux_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    }
 }
 
 if ( !($ldap_admin_dn) ) {
@@ -188,60 +192,61 @@ $tenants_org_dns | ForEach-Object {
         }
     }
 }
-#Parse Nipe Config
-$solr = @()
-$index = @{}
-$solr_properties = Get-Content "$env:NETMAIL_BASE_DIR\..\Nipe\Config\solr.properties"
-$solr_properties = $solr_properties.Replace('hosts=', '').Replace('/solr', '')
-$solr = ( $solr_properties -split ',' ) -Replace ':(.*)', ''
-#Discover more solr nodes via zookeeper
-Write-Output "`r`nDiscovering Index Nodes"
-Write-Output "-------------------------"
-$solr_nodes = @()
-$solr | ForEach-Object {
-    $params = '-k', '-s', "http://$($_):31000/solr/admin/collections?action=clusterstatus"
-    $response_xml = [xml](Invoke-Expression "& `"$curl_exe`" $params")
-    ($response_xml.response.lst | Where-Object {$_.name -eq "cluster"}).arr.str | `
-        ForEach-Object { $solr_nodes += $_.split(':')[0] }
-}
-$solr_nodes = $solr_nodes | Select-Object -Unique
-$solr_nodes | ForEach-Object {
-    $info_json = ''
+if (!($no_index)) {
+    #Parse Nipe Config
+    $solr = @()
     $index = @{}
-    $server = @{}
-    Write-Output "Found: $_"
-    Write-Output "Attempting to contact https://$_/info to gather platform information"
-    $params = '-k', '-s', "https://$_/info"
-    $info_json = Invoke-Expression "& `"$curl_exe`" $params" 
-    if (-not ([string]::IsNullOrEmpty($info_json))) {
-        $info_hash = @{}
-        $info_json = ($info_json -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $info_hash[$_.Name] = $_.Value }
-        $server['version'] = $info_hash['netmail-platform'].version
-        $server['name'] = $info_hash['netmail-platform'].name
-        Write-Output "Platform information OK"
+    $solr_properties = Get-Content "$env:NETMAIL_BASE_DIR\..\Nipe\Config\solr.properties"
+    $solr_properties = $solr_properties.Replace('hosts=', '').Replace('/solr', '')
+    $solr = ( $solr_properties -split ',' ) -Replace ':(.*)', ''
+    #Discover more solr nodes via zookeeper
+    Write-Output "`r`nDiscovering Index Nodes"
+    Write-Output "-------------------------"
+    $solr_nodes = @()
+    $solr | ForEach-Object {
+        $params = '-k', '-s', "http://$($_):31000/solr/admin/collections?action=clusterstatus"
+        $response_xml = [xml](Invoke-Expression "& `"$curl_exe`" $params")
+        ($response_xml.response.lst | Where-Object {$_.name -eq "cluster"}).arr.str | `
+            ForEach-Object { $solr_nodes += $_.split(':')[0] }
     }
-    else {
-        $server['version'] = "9.9.9.9"
-        $server['name'] = "not_reachable"
-        $unreachable_present = $true
-        Write-Output "Cannot contact platform"
-    }
-    $index[$_] = $server
-    if ($cluster_info['index'].Count -eq 0) {
-        $cluster_info['index'] = $index
-    }
-    else {
-        $duplicated = $cluster_info['index'].ContainsKey($_)
-        if ($duplicated) {
-            $_ | Out-File -Append "$PSScriptRoot\duplicated_nodes.txt"
-            $index[$_] | Out-File -Append "$PSScriptRoot\duplicated_nodes.txt"
+    $solr_nodes = $solr_nodes | Select-Object -Unique
+    $solr_nodes | ForEach-Object {
+        $info_json = ''
+        $index = @{}
+        $server = @{}
+        Write-Output "Found: $_"
+        Write-Output "Attempting to contact https://$_/info to gather platform information"
+        $params = '-k', '-s', "https://$_/info"
+        $info_json = Invoke-Expression "& `"$curl_exe`" $params" 
+        if (-not ([string]::IsNullOrEmpty($info_json))) {
+            $info_hash = @{}
+            $info_json = ($info_json -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $info_hash[$_.Name] = $_.Value }
+            $server['version'] = $info_hash['netmail-platform'].version
+            $server['name'] = $info_hash['netmail-platform'].name
+            Write-Output "Platform information OK"
         }
         else {
-            $cluster_info['index'] += $index
+            $server['version'] = "9.9.9.9"
+            $server['name'] = "not_reachable"
+            $unreachable_present = $true
+            Write-Output "Cannot contact platform"
+        }
+        $index[$_] = $server
+        if ($cluster_info['index'].Count -eq 0) {
+            $cluster_info['index'] = $index
+        }
+        else {
+            $duplicated = $cluster_info['index'].ContainsKey($_)
+            if ($duplicated) {
+                $_ | Out-File -Append "$PSScriptRoot\duplicated_nodes.txt"
+                $index[$_] | Out-File -Append "$PSScriptRoot\duplicated_nodes.txt"
+            }
+            else {
+                $cluster_info['index'] += $index
+            }
         }
     }
 }
-
 # DP
 #Discover more solr nodes via zookeeper
 Write-Output "`r`nChecking my platform component (Remote Provider)"
@@ -302,10 +307,11 @@ if ($interactive) {
     Write-Output "`r`nArchive nodes:"
     Write-Output "--------------"
     Write-Output $($info_hash).archive | Format-List
-    Write-Output "`r`nIndex nodes:"
-    Write-Output "------------"
-    Write-Output $($info_hash).index | Format-List
-
+    if (!($no_index)) {
+        Write-Output "`r`nIndex nodes:"
+        Write-Output "------------"
+        Write-Output $($info_hash).index | Format-List
+    }
     $confirmation = ""
     while (($confirmation -ne "y") -and ($confirmation -ne "n") -and ($confirmation -ne "yes") -and ($confirmation -ne "no")) {
         $confirmation = (Read-Host "Proceed?(yes/no)").ToLower()
@@ -321,11 +327,13 @@ if ($interactive) {
 
 # Vars init -  download utils
 
-# Download utility for linux connectivity
-$curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
-$params = '-k', '-s', '-O', "https://netgovernpkgs.blob.core.windows.net/download/klink.exe"
-Invoke-Expression "& `"$curl_exe`" $params" 
-$klink_exe = "$PSScriptRoot\klink.exe"
+if (!($no_index)) {
+    # Download utility for linux connectivity
+    $curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
+    $params = '-k', '-s', '-O', "https://netgovernpkgs.blob.core.windows.net/download/klink.exe"
+    Invoke-Expression "& `"$curl_exe`" $params" 
+    $klink_exe = "$PSScriptRoot\klink.exe"
+}
 
 $windows_admin_password_secure_string = $windows_admin_password | ConvertTo-SecureString -AsPlainText -Force
 $admin_credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $windows_admin_user, $windows_admin_password_secure_string
@@ -341,39 +349,41 @@ $info_json = Get-Content "$PSScriptRoot\my-cluster-info.json"
 $info_hash = @{}
 ($info_json -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $info_hash[$_.Name] = $_.Value }
 
-# Testing OS pre requisites
-Write-Output "`r`nTesting linux credentials"
-$info_hash['index'].psobject.Properties | foreach-object {
-    $node_ip = $_.Name
-    $_.Value.psobject.properties | ForEach-Object {
-        if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
-            $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
-                "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", "sudo -n -l sudo"
-            $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-            $pinfo.FileName = ${klink_exe}
-            $pinfo.RedirectStandardError = $true
-            $pinfo.RedirectStandardOutput = $true
-            $pinfo.UseShellExecute = $false
-            $pinfo.Arguments = $klink_parameters
-            $p = New-Object System.Diagnostics.Process
-            $p.StartInfo = $pinfo
-            $p.Start() | Out-Null
-            if ( ! $p.WaitForExit(15000) ) {
-                Write-Output "${klink_exe} did not exit after 15s.  Killing process"
-                $p.kill()
-            }
-            $stdout = $p.StandardOutput.ReadToEnd()
-            if ($p.ExitCode -eq 0) {
-                if ($stdout -match "/bin/sudo") { 
-                    Write-Output "User: ${linux_admin_user} is able to connect to $node_ip and has sudo rights"
+if (!($no_index)) {
+    # Testing OS pre requisites
+    Write-Output "`r`nTesting linux credentials"
+    $info_hash['index'].psobject.Properties | foreach-object {
+        $node_ip = $_.Name
+        $_.Value.psobject.properties | ForEach-Object {
+            if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+                $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
+                    "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", "sudo -n -l sudo"
+                $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+                $pinfo.FileName = ${klink_exe}
+                $pinfo.RedirectStandardError = $true
+                $pinfo.RedirectStandardOutput = $true
+                $pinfo.UseShellExecute = $false
+                $pinfo.Arguments = $klink_parameters
+                $p = New-Object System.Diagnostics.Process
+                $p.StartInfo = $pinfo
+                $p.Start() | Out-Null
+                if ( ! $p.WaitForExit(15000) ) {
+                    Write-Output "${klink_exe} did not exit after 15s.  Killing process"
+                    $p.kill()
+                }
+                $stdout = $p.StandardOutput.ReadToEnd()
+                if ($p.ExitCode -eq 0) {
+                    if ($stdout -match "/bin/sudo") { 
+                        Write-Output "User: ${linux_admin_user} is able to connect to $node_ip and has sudo rights"
+                    } else {
+                        Write-Output "Linux credentials pre-requisites not met.  Exiting script."
+                        Write-Output "Please verify that the user ${linux_admin_user} can login to $node_ip and has sudo rights"
+                        Exit 1
+                    }
                 } else {
-                    Write-Output "Linux credentials pre-requisites not met.  Exiting script."
-                    Write-Output "Please verify that the user ${linux_admin_user} can login to $node_ip and has sudo rights"
+                    Write-Output "Cannot connect to $node_ip with user: ${linux_admin_user}"
                     Exit 1
                 }
-            } else {
-                Write-Output "Cannot connect to $node_ip with user: ${linux_admin_user}"
-                Exit 1
             }
         }
     }
@@ -385,9 +395,11 @@ $info_hash['archive'].psobject.Properties | foreach-object {
         if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
             $testSession = New-PSSession -Computer $node_ip -Credential $admin_credentials -ErrorAction SilentlyContinue
             if (-not($testSession)) {
-                Write-Output "Windows credentials pre-requisites not met.  Exiting script."
-                Write-Output "Please verify that the user ${windows_admin_user} can login to $node_ip as administrator"
-                Exit 1
+                Write-Output "Cannot establish a powershell session to $node_ip. please verify that the user ${windows_admin_user} can log in as administrator"
+                if (!($skip_wrong_creds)) {
+                    Write-Output "Windows credentials pre-requisites not met.  Exiting script."
+                    Exit 1
+                }
             }
             else {
                 Write-Output "User: ${windows_admin_user} is able to connect to $node_ip successfully"
