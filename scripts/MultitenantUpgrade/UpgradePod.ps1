@@ -7,13 +7,13 @@ This script discovers the nodes in a multitenant environment and upgrades them a
 It needs windows and linux admin passwords for the nodes as well as the target version to which upgrade
 
 Most of the parameters names are self explanatory.  
-The option "interactive" will prompt the user to continue after displaying the discovered nodes in the pod.
+The option "unattended" will skip prompting the user to continue after displaying the discovered nodes in the pod.
 The option "discover_only" will not run any upgrade but it will leave a json file called my-cluster-info.json in the same folder of the script location.
 
 .EXAMPLE
 .\DiscoveryAndUpgrade.ps1 -windows_admin_user "Administrator" -windows_admin_password "ThePassword" `
     -linux_admin_user netmail -linux_admin_password "ThePassword" -upgrade_version "6.3.0.1454" `
-    -interactive -discover_only
+    -discover_only
 
 #>
 
@@ -33,7 +33,7 @@ Param(
     [Parameter()]
     [string]$upgrade_version,
     [Parameter()]
-    [switch]$interactive,
+    [switch]$unattended,
     [Parameter()]
     [switch]$no_index,
     [Parameter()]
@@ -322,7 +322,7 @@ If ($discover_only) {
     Exit 0
 }
 
-if ($interactive) {
+if (!($unattended)) {
     $confirmation = ""
     while (($confirmation -ne "y") -and ($confirmation -ne "n") -and ($confirmation -ne "yes") -and ($confirmation -ne "no")) {
         $confirmation = (Read-Host "Proceed?(yes/no)").ToLower()
