@@ -33,7 +33,9 @@ Param(
     [Parameter()]
     [switch]$interactive,
     [Parameter()]
-    [switch]$Debugme
+    [switch]$Debugme,
+    [Parameter()]
+    [string]$upgrade_version
 )
 
 # Parameters sanity check
@@ -70,6 +72,14 @@ if ( !($ldap_admin_dn_password) ) {
     $ldap_admin_dn_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 }
 
+# Upgrade Version verification
+$available_versions = @(
+        "6.3.0.1454", 
+        "6.3.1.1589" 
+    )
+if ( !($upgrade_version) ) {
+    $upgrade_version = Read-Host -Prompt "Enter the version to upgrade to"
+}
 
 Write-Output "`r`nScript started!!"
 
