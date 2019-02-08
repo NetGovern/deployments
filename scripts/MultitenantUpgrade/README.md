@@ -19,24 +19,38 @@ It will leave the json file with the discovered nodes in a file within the same 
 ## Parameters
 
 ```
-<#
-
-.SYNOPSIS
-This script discovers the nodes in a multitenant environment and upgrades them after confirmation.
-
-.DESCRIPTION
 It needs windows and linux admin passwords for the nodes as well as the target version to which upgrade
 
-Most of the parameters names are self explanatory.  
-The option "interactive" will prompt the user to continue after displaying the discovered nodes in the pod.
-The option "discoverOnly" will not run any upgrade but it will leave a json file called my-cluster-info.json in the same folder of the script location.
+Most of the parameters names are self explanatory.  Some clarification below:
 
-.EXAMPLE
-.\DiscoveryAndUpgrade.ps1 -windows_admin_user "Administrator" -windows_admin_password "ThePassword" `
+The option "unattended" will skip prompting the user to continue after displaying the discovered nodes in the pod.
+The option "discover_only" will not run any upgrade but it will leave a json file called my-cluster-info.json in the same folder of the script location.
+The option "no_index" will skip index upgrade
+The option "no_master" will skip master/worker nodes upgrade.
+The option "skip_wrong_creds" will continue with the upgrade even if some of the nodes' credentials are not correct.
+The option "test_connectiviy" will discover all the nodes and test the credentials.
+To upgrade only the Remote Provider server, -no_index and -no_master can be used.
+```
+
+## Examples
+```
+The following launches a full upgrade to all the pod:
+.\UpgradePod.ps1 -windows_admin_user "Administrator" -windows_admin_password "ThePassword" `
     -linux_admin_user netmail -linux_admin_password "ThePassword" -upgrade_version "6.3.0.1454" `
-    -interactive -discoverOnly
+    -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
 
-#>
+Same as above but it will prompt for passwords:
+.\UpgradePod.ps1 -upgrade_version "6.3.0.1454"
+
+The following options will upgrade only the Remote Provider server:
+.\UpgradePod.ps1 -no_index -no_master -upgrade_version "6.3.0.1454"
+
+The below will only test for connectivity (it tries to log in to each discovered node):
+.\UpgradePod.ps1 -test_connectivity -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
+
+These options will discover the nodes in the pod:
+.\UpgradePod.ps1 -discover_only -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
+
 ```
 
 ## About LDAP and Postgres

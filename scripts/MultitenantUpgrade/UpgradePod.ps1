@@ -6,14 +6,34 @@ This script discovers the nodes in a multitenant environment and upgrades them a
 .DESCRIPTION
 It needs windows and linux admin passwords for the nodes as well as the target version to which upgrade
 
-Most of the parameters names are self explanatory.  
+Most of the parameters names are self explanatory.  Some clarification below:
+
 The option "unattended" will skip prompting the user to continue after displaying the discovered nodes in the pod.
 The option "discover_only" will not run any upgrade but it will leave a json file called my-cluster-info.json in the same folder of the script location.
+The option "no_index" will skip index upgrade
+The option "no_master" will skip master/worker nodes upgrade.
+The option "skip_wrong_creds" will continue with the upgrade even if some of the nodes' credentials are not correct.
+The option "test_connectiviy" will discover all the nodes and test the credentials.
+To upgrade only the Remote Provider server, -no_index and -no_master can be used.
+
 
 .EXAMPLE
-.\DiscoveryAndUpgrade.ps1 -windows_admin_user "Administrator" -windows_admin_password "ThePassword" `
+The following launches a full upgrade to all the pod:
+.\UpgradePod.ps1 -windows_admin_user "Administrator" -windows_admin_password "ThePassword" `
     -linux_admin_user netmail -linux_admin_password "ThePassword" -upgrade_version "6.3.0.1454" `
-    -discover_only
+    -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
+
+Same as above but it will prompt for passwords:
+.\UpgradePod.ps1 -upgrade_version "6.3.0.1454"
+
+The following options will upgrade only the Remote Provider server:
+.\UpgradePod.ps1 -no_index -no_master -upgrade_version "6.3.0.1454"
+
+The below will only test for connectivity (it tries to log in to each discovered node):
+.\UpgradePod.ps1 -test_connectivity -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
+
+These options will discover the nodes in the pod:
+.\UpgradePod.ps1 -discover_only -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
 
 #>
 
@@ -37,9 +57,11 @@ Param(
     [Parameter()]
     [switch]$no_index,
     [Parameter()]
+    [switch]$no_master,
+    [Parameter()]
     [switch]$skip_wrong_creds,
     [Parameter()]
-    [switch]$debug_me,
+    [switch]$show_passwords,
     [Parameter()]
     [switch]$discover_only,
     [Parameter()]
@@ -47,61 +69,66 @@ Param(
 )
 
 # Parameters sanity check
-if ( !($windows_admin_user) ) {
-    $windows_admin_user = Read-Host -Prompt "Enter a common windows user account with administrative rights on the nodes"
-}
-
-if ( !($windows_admin_password) ) {
-    $secure_string_windows_admin_password = Read-Host -Prompt `
-        "Enter the password for the common windows user account with administrative rights on the nodes" -AsSecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_windows_admin_password)
-    $windows_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-}
-if ( !($no_index) ) {
-    if ( !($linux_admin_user) ) {
-        $linux_admin_user = Read-Host -Prompt "Enter a common linux user account with sudo rights on the nodes"
+if ( !$discover_only ) {
+    if ( !$no_master ) {
+        if ( !$windows_admin_user ) {
+            $windows_admin_user = Read-Host -Prompt "Enter a common windows user account with administrative rights on the nodes"
+        }
+        if ( !$windows_admin_password ) {
+            $secure_string_windows_admin_password = Read-Host -Prompt `
+                "Enter the password for the common windows user account with administrative rights on the nodes" -AsSecureString
+            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_windows_admin_password)
+            $windows_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        }
     }
+    if ( !($no_index) ) {
+        if ( !($linux_admin_user) ) {
+            $linux_admin_user = Read-Host -Prompt "Enter a common linux user account with sudo rights on the nodes"
+        }
 
-    if ( !($linux_admin_password) ) {
-        $secure_string_linux_admin_password = Read-Host -Prompt `
-            "Enter the password for the linux user account with sudo rights on the nodes" -AsSecureString
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_linux_admin_password)
-        $linux_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        if ( !($linux_admin_password) ) {
+            $secure_string_linux_admin_password = Read-Host -Prompt `
+                "Enter the password for the linux user account with sudo rights on the nodes" -AsSecureString
+            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_linux_admin_password)
+            $linux_admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        }
     }
 }
 
-if ( !($ldap_admin_dn) ) {
-    $ldap_admin_dn = Read-Host -Prompt "Enter the DN for the ldap administration user"
+if ( (!$no_index -or !$no_master) -or ($discover_only -or $test_connectivity) ) {
+    if ( !($ldap_admin_dn) ) {
+        $ldap_admin_dn = Read-Host -Prompt "Enter the DN for the ldap administration user"
+    }
+    if ( !($ldap_admin_dn_password) ) {
+        $secure_string_ldap_admin_dn_password = Read-Host -Prompt `
+            "Enter the password for the DN ldap administration user" -AsSecureString
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_ldap_admin_dn_password)
+        $ldap_admin_dn_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+    }
 }
-
-if ( !($ldap_admin_dn_password) ) {
-    $secure_string_ldap_admin_dn_password = Read-Host -Prompt `
-        "Enter the password for the DN ldap administration user" -AsSecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure_string_ldap_admin_dn_password)
-    $ldap_admin_dn_password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-}
-
 # Upgrade Version verification
 $available_versions = @(
         "6.3.0.1454", 
         "6.3.1.1589" 
     )
-if ( !($upgrade_version) ) {
-    $upgrade_version = Read-Host -Prompt "Enter the version to upgrade to"
+if ( !$discover_only -and !$test_connectivity ) {
+    if ( !($upgrade_version) ) {
+        $upgrade_version = Read-Host -Prompt "Enter the version to upgrade to"
+    }
 }
-
 Write-Output "`r`nScript started!!"
 
-if ($available_versions -contains $upgrade_version) {
-    Write-Output "`r`nVersion $upgrade_version supported"
-} else {
-    Write-Output "`r`nVersion: $upgrade_version not supported."
-    Exit 1
+if ( !$discover_only -and !$test_connectivity ) {
+    if ($available_versions -contains $upgrade_version) {
+        Write-Output "`r`nVersion $upgrade_version supported"
+    } else {
+        Write-Output "`r`nVersion: $upgrade_version not supported."
+        Exit 1
+    }
 }
-
 Write-Output "`r`nDiscovering Nodes in the multitenant cluster"
 
-If ($debug_me) {
+If ($show_passwords) {
     Write-Output "`r`nwindows: $windows_admin_user, $windows_admin_password"
     Write-Output "linux: $linux_admin_user, $linux_admin_password"
     Write-Output "ldap: $ldap_admin_dn, $ldap_admin_dn_password"
@@ -259,7 +286,6 @@ $solr_nodes | ForEach-Object {
 }
 
 # DP
-#Discover more solr nodes via zookeeper
 Write-Output "`r`nChecking my platform component (Remote Provider)"
 Write-Output "----------------------------------------------------"
 $dp = @{}
@@ -325,12 +351,9 @@ If ($discover_only) {
 if (!($unattended)) {
     $confirmation = ""
     while (($confirmation -ne "y") -and ($confirmation -ne "n") -and ($confirmation -ne "yes") -and ($confirmation -ne "no")) {
-        $confirmation = (Read-Host "Proceed?(yes/no)").ToLower()
+        $confirmation = (Read-Host "Proceed?(y/yes/n/no)").ToLower()
     }
-    if (($confirmation -eq "y") -or ($confirmation -eq "yes")) {
-        Write-Output "`r`nContinue to Upgrade"
-    }
-    else {
+    if (($confirmation -ne "y") -and ($confirmation -ne "yes")) {
         write-host "`r`nExiting"
         Exit 1
     }
@@ -410,6 +433,7 @@ $install_msi = {
     Write-Output "-----------------------------"
     Write-Output "NetGovern Installation Finished"
 }
+
 if (!($no_index)) {
     # Download utility for linux connectivity
     $curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
@@ -417,8 +441,6 @@ if (!($no_index)) {
     Invoke-Expression "& `"$curl_exe`" $params" 
     $klink_exe = "$PSScriptRoot\klink.exe"
 }
-$windows_admin_password_secure_string = $windows_admin_password | ConvertTo-SecureString -AsPlainText -Force
-$admin_credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $windows_admin_user, $windows_admin_password_secure_string
 
 Set-Item wsman:\localhost\Client\TrustedHosts -value '*' -Confirm:$false -Force
 
@@ -437,7 +459,7 @@ if (!($no_index)) {
     $info_hash['index'].psobject.Properties | foreach-object {
         $node_ip = $_.Name
         $_.Value.psobject.properties | ForEach-Object {
-            if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+            if ( $($_.Name) -eq "name" -and $($_.Value) -ne "not_reachable" ) {
                 $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
                     "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", "sudo -n -l sudo"
                 $pinfo = New-Object System.Diagnostics.ProcessStartInfo
@@ -464,30 +486,37 @@ if (!($no_index)) {
                     }
                 } else {
                     Write-Output "Cannot connect to $node_ip with user: ${linux_admin_user}"
-                    Exit 1
+                    if (!($skip_wrong_creds)) {
+                        Write-Output "Windows credentials pre-requisites not met.  Exiting script."
+                        Exit 1
+                    }
                 }
             }
         }
     }
 }
-Write-Output "`r`nTesting Windows credentials"
-$windows_nodes_creds_ok = @()
-$info_hash['archive'].psobject.Properties | foreach-object {
-    $node_ip = $_.Name
-    $_.Value.psobject.properties | ForEach-Object {
-        if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
-            $testSession = New-PSSession -Computer $node_ip -Credential $admin_credentials -ErrorAction SilentlyContinue
-            if (-not($testSession)) {
-                Write-Output "Cannot establish a powershell session to $node_ip. please verify that the user ${windows_admin_user} can log in as administrator"
-                if (!($skip_wrong_creds)) {
-                    Write-Output "Windows credentials pre-requisites not met.  Exiting script."
-                    Exit 1
+if ( !$no_master ) {
+    Write-Output "`r`nTesting Windows credentials"
+    $windows_admin_password_secure_string = $windows_admin_password | ConvertTo-SecureString -AsPlainText -Force
+    $windows_admin_credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $windows_admin_user, $windows_admin_password_secure_string
+    $windows_nodes_creds_ok = @()
+    $info_hash['archive'].psobject.Properties | foreach-object {
+        $node_ip = $_.Name
+        $_.Value.psobject.properties | ForEach-Object {
+            if ( $($_.Name) -eq "name" -and $($_.Value) -ne "not_reachable" ) {
+                $testSession = New-PSSession -Computer $node_ip -Credential $windows_admin_credentials -ErrorAction SilentlyContinue
+                if (-not($testSession)) {
+                    Write-Output "Cannot establish a powershell session to $node_ip. please verify that the user ${windows_admin_user} can log in as administrator"
+                    if (!($skip_wrong_creds)) {
+                        Write-Output "Windows credentials pre-requisites not met.  Exiting script."
+                        Exit 1
+                    }
                 }
-            }
-            else {
-                Write-Output "User: ${windows_admin_user} is able to connect to $node_ip successfully"
-                $windows_nodes_creds_ok += $node_ip
-                Remove-PSSession $testSession
+                else {
+                    Write-Output "User: ${windows_admin_user} is able to connect to $node_ip successfully"
+                    $windows_nodes_creds_ok += $node_ip
+                    Remove-PSSession $testSession
+                }
             }
         }
     }
@@ -498,20 +527,10 @@ if ($test_connectivity) {
     Exit 0
 }
 
-# Download Archive Installer
-$url = "https://netgovernpkgs.blob.core.windows.net/download/NetGovern$($upgrade_version).zip"
-$curl_download_file_path = "`"$env:NETMAIL_BASE_DIR\..\Installer\NetGovern.zip`""
-$downloaded_file_path = "$env:NETMAIL_BASE_DIR\..\Installer\NetGovern.zip"
-$params = '-k', '-o', $curl_download_file_path , $url
-if ( ! (test-path -pathtype container "$env:NETMAIL_BASE_DIR\..\installer") ) {
-    New-Item -Path "$env:NETMAIL_BASE_DIR\..\" -Name "installer" -ItemType "directory" | Out-Null
-}
-Write-Output "`r`nDownloading Upgrade package"
-Invoke-Expression "& `"$curl_exe`" $params"
-
-$upgrade_me = $false
 $jobs = @()
 if (!($no_index)) {
+    Write-Output "`r`nProcessing index nodes"
+    Write-Output "----------------------"
     $info_hash['index'].psobject.Properties | foreach-object {
         $node_ip = $_.Name
         $_.Value.psobject.properties | ForEach-Object {
@@ -538,14 +557,24 @@ if (!($no_index)) {
         }
     }
 }
-
+Write-Output "`r`nProcessing Remote Provider node"
+Write-Output "-------------------------------"
 $info_hash['dp'].psobject.Properties | foreach-object {
     $_.Value.psobject.properties | ForEach-Object {
         if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+            # Download Archive Installer
+            $url = "https://netgovernpkgs.blob.core.windows.net/download/NetGovern$($upgrade_version).zip"
+            $curl_download_file_path = "`"$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip`""
+            $params = '-k', '-o', $curl_download_file_path , $url
+            if ( ! (test-path -pathtype container "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)") ) {
+                New-Item -Path "$env:NETMAIL_BASE_DIR\..\" -Name "installer_$($upgrade_version)" -ItemType "directory" | Out-Null
+            }
+            Write-Output "`r`nDownloading Upgrade package"
+            Invoke-Expression "& `"$curl_exe`" $params"
+
             $chars = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
             $randomstr = (1..5 | ForEach-Object {'{0:X}' -f (Get-Random -InputObject $chars ) }) -join ''
             $current_version = $($_.Value)
-            $upgrade_me = $True
             Write-Output "`r`nStarting DP upgrade"
             Stop-Service NetmailLauncherService
             Write-Output "`r`nUpgrading Platform"
@@ -587,87 +616,97 @@ $info_hash['dp'].psobject.Properties | foreach-object {
                 }
             }
             Write-Output "`r`nRemote Provider Upgrade finished"
+            Write-Output "`r`nStarting DP Service"
+            Start-Service NetmailLauncherService
+        } else {
+            Write-Output "Remote Provider version already at: $($_.Value)"
         }
     }
 }
-
-if ($upgrade_me) {
-    Write-Output "`r`nStarting DP Service"
-    Start-Service NetmailLauncherService
-}
-
-Write-Output "`r`nStarting Archive Nodes upgrade"
-Write-Output "------------------------------"
-$archive_nodes = @()
-$info_hash['archive'].psobject.Properties | foreach-object {
-    $node_ip = $_.Name
-    if ($windows_nodes_creds_ok -contains $node_ip) {
-        $_.Value.psobject.properties | ForEach-Object {
-            if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
-                (New-PSDrive -name TEMP -PSProvider FileSystem -Root "\\$node_ip\c$\Program Files (x86)\Messaging Architects" -Credential $admin_credentials) | Out-Null
-                if ( ! (test-path -pathtype container "TEMP:\installer") ) {
-                    (New-Item -Path "TEMP:\" -Name "installer" -ItemType "directory") | Out-Null
+if ( !$no_master ) {
+    Write-Output "`r`nProcessing Archive nodes"
+    Write-Output "------------------------------"
+    $archive_nodes = @()
+    $info_hash['archive'].psobject.Properties | foreach-object {
+        $node_ip = $_.Name
+        if ($windows_nodes_creds_ok -contains $node_ip) {
+            $_.Value.psobject.properties | ForEach-Object {
+                if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
+                    (New-PSDrive -name TEMP -PSProvider FileSystem -Root "\\$node_ip\c$\Program Files (x86)\Messaging Architects" -Credential $windows_admin_credentials) | Out-Null
+                    if ( ! (test-path -pathtype container "TEMP:\installer") ) {
+                        (New-Item -Path "TEMP:\" -Name "installer" -ItemType "directory") | Out-Null
+                    }
+                    Write-Output "`r`nCopying installer to $node_ip"
+                    if ( !(Test-Path -Path "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip") ) {
+                        # Download Archive Installer
+                        $url = "https://netgovernpkgs.blob.core.windows.net/download/NetGovern$($upgrade_version).zip"
+                        $curl_download_file_path = "`"$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip`""
+                        $params = '-k', '-o', $curl_download_file_path , $url
+                        if ( ! (test-path -pathtype container "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)") ) {
+                            New-Item -Path "$env:NETMAIL_BASE_DIR\..\" -Name "installer_$($upgrade_version)" -ItemType "directory" | Out-Null
+                        }
+                        Write-Output "`r`nDownloading Upgrade package"
+                        Invoke-Expression "& `"$curl_exe`" $params" 
+                    }
+                    Get-ChildItem "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip" | Copy-Item -Destination "TEMP:\installer"
+                    Remove-PSDrive -Name TEMP
+                    $job_name = "JobAt$($node_ip)-$(Get-Date -f "MMddhhmmss")"
+                    Write-Output "Starting Archive upgrade job at $node_ip"
+                    (Invoke-Command -ScriptBlock $install_msi -ComputerName $node_ip -Credential $windows_admin_credentials -AsJob -JobName $job_name) | Out-Null
+                    if ($?) { 
+                        $jobs += $job_name
+                        $archive_nodes += $node_ip
+                    }
+                    else { Write-output "`r`nJob could not be launched at $node_ip, please run upgrade manually" }
                 }
-                Write-Output "`r`nCopying installer to $node_ip"
-                Get-ChildItem $downloaded_file_path | Copy-Item -Destination "TEMP:\installer"
-                Remove-PSDrive -Name TEMP
-                $job_name = "JobAt$($node_ip)-$(Get-Date -f "MMddhhmmss")"
-                Write-Output "Starting Archive upgrade job at $node_ip"
-                (Invoke-Command -ScriptBlock $install_msi -ComputerName $node_ip -Credential $admin_credentials -AsJob -JobName $job_name) | Out-Null
-                if ($?) { 
-                    $jobs += $job_name
-                    $archive_nodes += $node_ip
-                }
-                else { Write-output "`r`nJob could not be launched at $node_ip, please run upgrade manually" }
             }
         }
     }
-}
 
-#Checking jobs status
-$Timer = 0
-$TimerLimit = 3600
-$TimerIncrement = 10
-$jobs_left = $jobs.Count
-$progress_bar = "."
-Write-Output "`r`nWaiting for Jobs to finish"
-Get-Job -Name JobAt*
-while (($jobs_left -gt 0) -And ($Timer -lt $TimerLimit)) {
+    #Checking jobs status
+    $Timer = 0
+    $TimerLimit = 3600
+    $TimerIncrement = 10
     $jobs_left = $jobs.Count
-    if ( ($Timer % 180) -eq 0 ) {
-        Write-Output "`r`nPlease wait for the remote and background jobs to finish..."
-        Get-Job -Name $jobs | Select-Object Name, State, Location
-        $progress_bar = ""
-    }
-    Start-Sleep $TimerIncrement
-    Write-Host $progress_bar -NoNewline
-    $Timer = $Timer + $TimerIncrement
-    $progress_bar += "."
-    ForEach ($job_name in $jobs) {
-        $job_state = (get-job -Name $job_name).JobStateInfo.State
-        if ($job_state -eq "Completed") {
-            $jobs_left -= 1 
+    $progress_bar = "."
+    Write-Output "`r`nWaiting for Jobs to finish"
+    Get-Job -Name JobAt*
+    while (($jobs_left -gt 0) -And ($Timer -lt $TimerLimit)) {
+        $jobs_left = $jobs.Count
+        if ( ($Timer % 180) -eq 0 ) {
+            Write-Output "`r`nPlease wait for the remote and background jobs to finish..."
+            Get-Job -Name $jobs | Select-Object Name, State, Location
+            $progress_bar = ""
         }
-        get-job -Name $job_name | Receive-Job | Out-File -Append "$($job_name).txt"
-    }    
-}
-If ($Timer -ge $TimerLimit) {
-    Write-Output "`r`nRemote upgrades timed out after $TimerLimit seconds)"
-}
-else {
-    Write-Output "---------------------------------------"
-    Write-Output "`r`nAll Remote and background jobs finished"
-}
-
-foreach ($archive_node_to_be_started in $archive_nodes) {
-    Write-Output "`r`nStarting Launcher @ $archive_node_to_be_started"
-    try {
-        Invoke-Command -ScriptBlock { Start-Service NetmailLauncherService } -ComputerName $archive_node_to_be_started -Credential $admin_credentials -ErrorAction Stop
+        Start-Sleep $TimerIncrement
+        Write-Host $progress_bar -NoNewline
+        $Timer = $Timer + $TimerIncrement
+        $progress_bar += "."
+        ForEach ($job_name in $jobs) {
+            $job_state = (get-job -Name $job_name).JobStateInfo.State
+            if ($job_state -eq "Completed") {
+                $jobs_left -= 1 
+            }
+            get-job -Name $job_name | Receive-Job | Out-File -Append "$($job_name).txt"
+        }    
     }
-    catch {
-        Write-Output "`r`nCannot start Launcher Service at $archive_node_to_be_started"
+    If ($Timer -ge $TimerLimit) {
+        Write-Output "`r`nRemote upgrades timed out after $TimerLimit seconds)"
+    }
+    else {
+        Write-Output "---------------------------------------"
+        Write-Output "`r`nAll Remote and background jobs finished"
+    }
+
+    foreach ($archive_node_to_be_started in $archive_nodes) {
+        Write-Output "`r`nStarting Launcher @ $archive_node_to_be_started"
+        try {
+            Invoke-Command -ScriptBlock { Start-Service NetmailLauncherService } -ComputerName $archive_node_to_be_started -Credential $windows_admin_credentials -ErrorAction Stop
+        }
+        catch {
+            Write-Output "`r`nCannot start Launcher Service at $archive_node_to_be_started"
+        }
     }
 }
-
 Write-Output "`r`n---------------"
 Write-Output "Script Finished"
