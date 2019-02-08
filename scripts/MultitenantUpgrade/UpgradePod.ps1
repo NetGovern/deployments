@@ -68,6 +68,22 @@ Param(
     [switch]$test_connectivity
 )
 
+function Unzip {
+    Param(
+        [Parameter(Mandatory = $True)]
+        [string]$path_to_zip,
+        [Parameter(Mandatory = $True)]
+        [string]$target_dir
+    )
+    if ( $PSVersionTable.PSVersion.Major -eq 4) {
+        [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("$path_to_zip", "$target_dir")
+    }
+    if ( $PSVersionTable.PSVersion.Major -ge 5) {
+        Expand-Archive -LiteralPath "$path_to_zip" -DestinationPath "$target_dir"
+    }
+}
+
 # Parameters sanity check
 if ( !$discover_only ) {
     if ( !$no_master ) {
@@ -383,7 +399,7 @@ $install_msi = {
     }
 
     Remove-Item "$env:TEMP\NetGovern" -Force -Recurse -ErrorAction Ignore
-    Unzip -path_to_zip "C:\Program Files (x86)\Messaging Architects\installer\NetGovern.zip" -target_dir "$env:TEMP"
+    Unzip -path_to_zip "C:\Program Files (x86)\Messaging Architects\installer_$($using:upgrade_version)\NetGovern.zip" -target_dir "$env:TEMP"
 
     # Launch Install.bat
     $path2Installbat = "$env:TEMP\NetGovern\install.bat"
@@ -578,7 +594,61 @@ $info_hash['dp'].psobject.Properties | foreach-object {
             Write-Output "`r`nStarting DP upgrade"
             Stop-Service NetmailLauncherService
             Write-Output "`r`nUpgrading Platform"
-            Invoke-Command -ScriptBlock $install_msi | Out-File "remoteProviderNetGovernInstallLog.txt"
+            # Checking  PSH Version
+            if ( $PSVersionTable.PSVersion.Major -lt 4 ) {
+                Write-Output "Powershell version not supported: $($PSVersionTable.PSVersion.Major)"
+            }
+
+            Remove-Item "$env:TEMP\NetGovern" -Force -Recurse -ErrorAction Ignore
+            Unzip -path_to_zip "C:\Program Files (x86)\Messaging Architects\installer_$($upgrade_version)\NetGovern.zip" -target_dir "$env:TEMP"
+
+            # Launch Install.bat
+            $path2Installbat = "$env:TEMP\NetGovern\install.bat"
+            $version = ((Get-Content $path2Installbat | Select-String "Update.exe version") -split "Update.exe version=")[1].Trim()
+            Write-Output "Upgrading to version: $version"
+            $InstallNetGovernArgument = "/c " + $path2Installbat
+            $InstallNetGovernWorkingDir = "$env:TEMP\NetGovern"
+            try {
+                Start-Process cmd -ArgumentList $InstallNetGovernArgument -WorkingDirectory $InstallNetGovernWorkingDir -ErrorAction Stop
+            }
+            Catch {
+                Write-Output "Cannot launch install.bat"
+                Exit 1
+            }
+
+            $logFilesPath = Test-Path "C:\Program Files (x86)\Messaging Architects\_$($version)\install.log"
+            $Timer = 0
+            $TimerLimit = 600
+            $TimerIncrement = 10
+            while ((-Not $logFilesPath) -And ($Timer -lt $TimerLimit)) {
+                Write-Output "Waiting for the upgrade process to start"
+                Start-Sleep $TimerIncrement
+                $Timer = $Timer + $TimerIncrement
+                $logFilesPath = Test-Path "C:\Program Files (x86)\Messaging Architects\_$($version)\install.log"
+            }
+            If ($Timer -ge $TimerLimit) {
+                Write-Output "NetGovern installation (install.bat) timed out to create Log Files folder ($TimerLimit seconds)"
+                Exit 1
+            }
+
+            $netmailLogFile = "C:\Program Files (x86)\Messaging Architects\_$($version)\install.log"
+            $Finished = (Get-Content $netmailLogFile | Select-String "Installation success or error status: 0" -ErrorAction Ignore)
+            $Timer = 0
+            $TimerLimit = 1800
+            $TimerIncrement = 60
+            while ((-Not $Finished) -And ($Timer -lt $TimerLimit)) {
+                Write-Output "NetGovern installing, please wait"
+                Start-Sleep $TimerIncrement
+                $Timer = $Timer + $TimerIncrement
+                $Finished = (Get-Content $netmailLogFile | Select-String "Installation success or error status: 0" -ErrorAction Ignore)
+            }
+            If ($Timer -ge $TimerLimit) {
+                Write-Output "NetGovern installation (install.bat) timed out ($TimerLimit seconds)"
+                Exit 1
+            }
+            Write-Output "-----------------------------"
+            Write-Output "NetGovern Installation Finished"
+
             Write-Output "Platform Upgrade finished"
             Write-Output "`r`nBacking up existing DP folders to $($env:NETMAIL_BASE_DIR)\..\bkp_dp_$($randomstr)_$($current_version)"
             (New-Item -Path "$($env:NETMAIL_BASE_DIR)\.." -Name "bkp_dp_$($randomstr)_$($current_version)" -ItemType "directory") | Out-Null
@@ -633,8 +703,8 @@ if ( !$no_master ) {
             $_.Value.psobject.properties | ForEach-Object {
                 if ( $($_.Name) -eq "version" -and $($_.Value) -lt $upgrade_version ) {
                     (New-PSDrive -name TEMP -PSProvider FileSystem -Root "\\$node_ip\c$\Program Files (x86)\Messaging Architects" -Credential $windows_admin_credentials) | Out-Null
-                    if ( ! (test-path -pathtype container "TEMP:\installer") ) {
-                        (New-Item -Path "TEMP:\" -Name "installer" -ItemType "directory") | Out-Null
+                    if ( ! (test-path -pathtype container "TEMP:\installer_$($upgrade_version)") ) {
+                        (New-Item -Path "TEMP:\" -Name "installer_$($upgrade_version)" -ItemType "directory") | Out-Null
                     }
                     Write-Output "`r`nCopying installer to $node_ip"
                     if ( !(Test-Path -Path "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip") ) {
@@ -648,7 +718,7 @@ if ( !$no_master ) {
                         Write-Output "`r`nDownloading Upgrade package"
                         Invoke-Expression "& `"$curl_exe`" $params" 
                     }
-                    Get-ChildItem "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip" | Copy-Item -Destination "TEMP:\installer"
+                    Get-ChildItem "$env:NETMAIL_BASE_DIR\..\installer_$($upgrade_version)\NetGovern.zip" | Copy-Item -Destination "TEMP:\installer_$($upgrade_version)"
                     Remove-PSDrive -Name TEMP
                     $job_name = "JobAt$($node_ip)-$(Get-Date -f "MMddhhmmss")"
                     Write-Output "Starting Archive upgrade job at $node_ip"
