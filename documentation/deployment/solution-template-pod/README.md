@@ -46,7 +46,6 @@ How to deploy a Pod using a NetGovern solution template
 ![alt text](./imgs/14-azure_portal.png "Template Deployment Status 1")  
 ![alt text](./imgs/15-azure_portal.png "Template Deployment Status 2")  
 ![alt text](./imgs/16-azure_portal.png "Template Deployment Status 3")  
-![alt text](./imgs/14-azure_portal.png "Template Deployment Status 1")  
 
 13. NetGovern Pod ready to use!  
-![alt text](./imgs/15-azure_portal.png "Virtual Machines")
+![alt text](./imgs/17-azure_portal.png "Virtual Machines")
