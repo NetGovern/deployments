@@ -125,7 +125,8 @@ if ( (!$no_index -or !$no_master) -or ($discover_only -or $test_connectivity) ) 
 # Upgrade Version verification
 $available_versions = @(
         "6.3.0.1454", 
-        "6.3.1.1589" 
+        "6.3.1.1589",
+        "6.3.1.1598" 
     )
 if ( !$discover_only -and !$test_connectivity ) {
     if ( !($upgrade_version) ) {
