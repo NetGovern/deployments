@@ -456,7 +456,7 @@ if (!($no_index)) {
     $curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
     $params = '-k', '-s', '-O', "https://netgovernpkgs.blob.core.windows.net/download/klink.exe"
     Invoke-Expression "& `"$curl_exe`" $params" 
-    $klink_exe = "$PSScriptRoot\klink.exe"
+    $klink_exe = "`"$PSScriptRoot\klink.exe`""
 }
 
 Set-Item wsman:\localhost\Client\TrustedHosts -value '*' -Confirm:$false -Force
