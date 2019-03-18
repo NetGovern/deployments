@@ -41,11 +41,3 @@
      apt:
        name: kubectl
        state: present
-
-- hosts: clients
-  become: yes
-  tasks:
-   - name: install kubectl
-     apt:
-       name: kubectl
-       state: present
