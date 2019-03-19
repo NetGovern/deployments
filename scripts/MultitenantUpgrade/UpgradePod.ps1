@@ -124,9 +124,10 @@ if ( (!$no_index -or !$no_master) -or ($discover_only -or $test_connectivity) ) 
 }
 # Upgrade Version verification
 $available_versions = @(
-        "6.3.0.1454", 
+        "6.3.0.1454",
         "6.3.1.1589",
-        "6.3.1.1598" 
+        "6.3.1.1598",
+        "6.3.2.1762"
     )
 if ( !$discover_only -and !$test_connectivity ) {
     if ( !($upgrade_version) ) {
@@ -456,7 +457,7 @@ if (!($no_index)) {
     $curl_exe = "$env:NETMAIL_BASE_DIR\etc\scripts\setup\curl.exe"
     $params = '-k', '-s', '-O', "https://netgovernpkgs.blob.core.windows.net/download/klink.exe"
     Invoke-Expression "& `"$curl_exe`" $params" 
-    $klink_exe = "`"$PSScriptRoot\klink.exe`""
+    $klink_exe = "$PSScriptRoot\klink.exe"
 }
 
 Set-Item wsman:\localhost\Client\TrustedHosts -value '*' -Confirm:$false -Force
@@ -555,7 +556,7 @@ if (!($no_index)) {
                 $klink_parameters = "-t", "-auto-store-sshkey", "-pw", `
                     "${linux_admin_password}", "-l", "${linux_admin_user}", "${node_ip}", `
                     "`"wget -P /tmp https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/upgrade_rpms.sh && chmod +x /tmp/upgrade_rpms.sh && sudo /tmp/upgrade_rpms.sh -v ${upgrade_version} -i && sudo systemctl restart netmail`""
-                $install_rpms_command = "& ${klink_exe} ${klink_parameters} 2>`$null"
+                $install_rpms_command = "& `"${klink_exe}`" ${klink_parameters} 2>`$null"
                 $install_index = [Scriptblock]::Create($install_rpms_command)
                 $output_file_name = "Index-$($node_ip)-$(Get-Date -f "MMddhhmmss").txt"
                 Write-Output "`r`nStarting Index upgrade from $($_.Value) to $upgrade_version"
