@@ -127,7 +127,8 @@ $available_versions = @(
         "6.3.0.1454",
         "6.3.1.1589",
         "6.3.1.1598",
-        "6.3.2.1762"
+        "6.3.2.1762",
+        "6.3.2.1785"
     )
 if ( !$discover_only -and !$test_connectivity ) {
     if ( !($upgrade_version) ) {
