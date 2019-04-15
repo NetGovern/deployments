@@ -15,7 +15,7 @@ The script stops and starts the NetGovern services.
 
 Write-Output "`r`nStarting DP upgrade"
 Stop-Service NetmailLauncherService
-$backup_folder = "bkp_dp_manual_$(get-date -f yymmddhhmmss)"
+$backup_folder = "bkp_dp_manual_$(get-date -f yyyyMMddhhmmss)"
 Write-Output "`r`nBacking up existing DP folders to $($env:NETMAIL_BASE_DIR)\..\$($backup_folder)"
 (New-Item -Path "$($env:NETMAIL_BASE_DIR)\.." -Name "$backup_folder" -ItemType "directory") | Out-Null
 $dp_folders = (Get-ChildItem -Path "$($env:NETMAIL_BASE_DIR)\.." -Directory | Where-Object {$_.FullName -match "RemoteProvider_"})
