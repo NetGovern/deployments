@@ -416,7 +416,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 	  
 	  $ kubectl apply -f rbac-auth.yaml
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
+https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
 
 	$ vi rbac-config.yaml
 
@@ -486,7 +486,7 @@ Verify that it it correct:
 
 Before we install the chart, let's create the namespace it requires:
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/kubernetes/kube-cluster/d-%20namespace.yaml?at=refs%2Fheads%2Fmaster
+https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/d-%20namespace.yaml?at=refs%2Fheads%2Fmaster
 
 	$ vi namespace.yaml
 
