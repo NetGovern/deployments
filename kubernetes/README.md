@@ -294,6 +294,11 @@ This will run a one node nginx deployment on your cluster.  While deployments de
 Now you can verify the available services, and their port.
 
 	$ kubectl get services
+	
+This should return a list of services like so:
+	
+![](https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/screenshots/nginx-service.jpg?at=refs%2Fheads%2Fmaster)
+
 
 Pay close attention to the exposed port, as that is the way to interact with your deployment;  it is usually in the form of a high port (usually 3xxxx). The container networking fabric takes care of routing requests form any host:port to the right pod, you can then browser to http://master_ip:3xxxx and you'll be whisked away and connected to the right service.
 
