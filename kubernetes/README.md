@@ -227,7 +227,9 @@ Let's now confirm everything works by connecting to the master and running kubec
 	$ ssh ubuntu@master_ip
 	$ kubectl get nodes
 
-This should return a list of nodes, one node, one master node, in a ready state.
+This should return a list of nodes, one node, one master node, in a ready state, like so:
+	
+![](https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/screenshots/kubectl-get-nodes-master.jpg?at=refs%2Fheads%2Fmaster)
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
