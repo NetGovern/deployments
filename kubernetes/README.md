@@ -163,6 +163,8 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 Now run the playbook to push out all the components to the appropriate hosts.
 
 	$ ansible-playbook -i hosts ~/kube-cluster/kube-dependencies.yml
+	
+
 
 Docker, kubeadm, and kubelet are now installed on all the servers. Kubectl is only installed on the master node since you will run kubectl commands from there (or from your workstation)
 
