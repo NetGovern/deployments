@@ -67,7 +67,7 @@ Create a directory on your local machine that will serve as your workspace. Ansi
 	worker2 ansible_host=worker_2_ip ansible_user=root
 	
 	[all:vars]
-	ansible_python_interpreter=/usr/bin/python3`
+	ansible_python_interpreter=/usr/bin/python3
 
 Now that you have the server inventory with groups, install the operating system level dependencies and create configuration settings.
 
