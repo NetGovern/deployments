@@ -486,6 +486,8 @@ Verify that it it correct:
 
 Before we install the chart, let's create the namespace it requires:
 
+https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/kubernetes/kube-cluster/d-%20namespace.yaml?at=refs%2Fheads%2Fmaster
+
 	$ vi namespace.yaml
 
 	{
