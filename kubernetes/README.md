@@ -202,7 +202,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 	    - name: copy admin.conf to user's kube config
 	      copy:
 	        src: /etc/kubernetes/admin.conf
-	        dest: /home/ubuntu/.kube/config
+	        dest: $HOME/.kube/config
 	        remote_src: yes
 	        owner: ubuntu
 
