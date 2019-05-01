@@ -416,7 +416,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 	  
 	  $ kubectl apply -f rbac-auth.yaml
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/kubernetes/kube-cluster/c-%20rbac-config.yaml
+https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
 
 	$ vi rbac-config.yaml
 
