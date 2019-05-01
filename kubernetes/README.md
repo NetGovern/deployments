@@ -5,15 +5,15 @@ Kubernetes is a container orchestration system, it manages containers, it is ope
 
 There are many commercially supported distributions (IBM Cloud Private, Kontena Pharos, Kublr, SuSe CaaS) following the steps below will get you going if you want to do it on your own. 
 
-Kubeadm automates the installation and configuration of Kubernetes components such as the API server, Controller Manager, and Kube DNS. It does not, however, create users or handle the installation of sofware or their dependencies and their configuration. For these preliminary tasks we will use Ansible.
+Kubeadm automates the installation and configuration of Kubernetes components such as the API server, Controller Manager, and Kube DNS. It does not, however, create users or handle the installation of software or its dependencies and its configuration. For these preliminary tasks we will use Ansible.
 
 
 Kubernetes concepts
 -------------------
 
-Clusters are made of nodes. One Master node (many in a currently experimental High availability mode)and one or more Worker nodes.
+Clusters are made of nodes; one Master node (many in a currently experimental High availability mode) and one or more Worker nodes.
 
-Pods run "the stuff"; they are the atomic unit and are comprised of one or more containers. These containers share resources such as file volumes and network interfaces in common. Pods are the basic unit in Kubernetes. All containers in a pod are guaranteed to run on the same node.
+Pods run "the stuff"; they are the atomic unit and are composed of one or more containers. These containers share resources such as file volumes and network interfaces in common. Pods are the basic unit in Kubernetes. All containers in a pod are guaranteed to run on the same node.
 
 Each pod has its own IP address. Pods on one node should be able to access pods on another node using the pod's IP. Containers on a single node can communicate easily through a local interface. Communication between pods is more complicated. It requires a separate networking component to route traffic from a pod on one node to a pod on another.
 
@@ -21,7 +21,7 @@ This functionality is provided by pod network plugins. For this cluster, we will
 
 The API server acts as the inbound vector for all management commands.  DNS is provided by CoreDNS and by default piggybacks onto the host DNS.
 
-Kubbernetes is declarative, that  is to say, a configuration  file, a yaml file, describes a desired state.  Once you deploy such an item, the Kubernetes system will ensure that it maintains the described state for that deoployment.
+Kubbernetes is declarative, that  is to say, a configuration  file, a yaml file, describes a desired state.  Once you deploy such an item, the Kubernetes system will ensure that it maintains the described state for that deployment.
 
 A deployment is a type of Kubernetes object that ensures there's always a specified number of pods running based on a defined template, that upgrades are dealt with in a specific way, etc... 
 
@@ -30,13 +30,13 @@ Services are another type of Kubernetes object. They are responsible for exposin
 Goals
 -----
 
-This guide will walk you through installing a Kubernetes cluster comprised of one Master node and two Worker nodes.
+This guide will walk you through installing a Kubernetes cluster composed of one Master node and two Worker nodes.
 
 The master node (a node in Kubernetes refers to a server) is responsible for managing the state of the cluster. It runs Etcd, which stores cluster data among components that schedule workloads to worker nodes.
 
 Shared storage is required for true portability, and the simplest way is to provision space on the Master node and use an NFS export, that you will mount from each worker node.
 
-Worker nodes are the servers where your workloads (i.e. containerized applications and services) will run. A worker will continue to run your workload once they're assigned to it, even if the master goes down once scheduling is complete. A cluster's capacity can be increased by adding workers.
+Worker nodes are the servers where your workloads (i.e., containerized applications and services) will run. A worker will continue to run your workload once they're assigned to it, even if the master goes down once scheduling is complete. A cluster's capacity can be increased by adding workers.
 
 
 Prerequisites
@@ -52,7 +52,7 @@ Prerequisites
 Setting Up the Workspace Directory and Ansible Inventory File
 -------------------------------------------------------------
 
-Create a directory on your local machine that will serve as your workspace. Ansible will be configured locally so that it can communicate with and execute commands on your remote servers. Once that's done, create a hosts file containing the IP addresses of your servers and the groups that each server belongs to.
+Create a directory on your local machine that will serve as your workspace. Ansible will be configured locally so that it can communicate with and execute commands on your remote servers. Once that's done, Create a hosts file containing the IP addresses of your servers and the groups that each server belongs to.
 
 
 	$ mkdir ~/kube-cluster
@@ -98,7 +98,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 		  with_file:
 			- ~/.ssh/id_rsa.pub
 
-Once done, now we run the playbook to actually do the work; this will  create a ubuntu user on all the hosts in the inventory  file, accessible withh your key, and with sudo privileges.
+Once done, now we run the playbook to actually do the work; this will  create a ubuntu user on all the hosts in the inventory  file, accessible with your key, and with sudo privileges.
 
 	$ ansible-playbook -i hosts ~/kube-cluster/initial.yml
 
@@ -107,7 +107,7 @@ With that done, the groundwork is laid to begin deploying Kubernetes.
 
 Installing Kubernetes Dependencies
 ----------------------------------
-The bare minumum packages required by Kubernetes on Ubuntu 18.04LTS are Docker (a container engine), kubeadm (a command line tool to install and configure k8s), kubelet (a minion installed on every node) and kubectl (a command line interface into Kubernetes' API server).
+The bare minimum packages required by Kubernetes on Ubuntu 18.04LTS are Docker (a container engine), kubeadm (a command line tool to install and configure k8s), kubelet (a minion installed on every node) and kubectl (a command line interface into Kubernetes' API server).
 
 Let's create the playbook that will deploy these to all the nodes.
 
@@ -214,7 +214,7 @@ Now run the playbook to create the cluster.
 
 	$ ansible-playbook -i hosts ~/kube-cluster/master.yml
 
-This is where we actually get things going. Kubeadm init creates the cluster, and set the inter node network all the pods will live on.  This happens to be the default network space for flannel, and we're just opportunistically informing the master node that that's what we'll be using. We then create the .kube durectory in ubuntu's home folder and copy /etc/kubernetes/admin.conf into it. This is the directory you copy from machine to machine to cheat and run kubectl locally.
+This is where we actually get things going. Kubeadm init creates the cluster, and set the inter node network all the pods will live on.  This happens to be the default network space for flannel, and we're just opportunistically informing the master node that that's what we'll be using. We then create the .kube directory in ubuntu's home folder and copy /etc/kubernetes/admin.conf into it. This is the directory you copy from machine to machine to cheat and run kubectl locally.
 
 Once kubectl is configured with that file, the  last task runs kubectl apply to install Flannel and enable inter pod networking.
 
@@ -227,12 +227,12 @@ This should return a list of nodes, one node, one master node, in a ready state.
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
-At this point, you can install kubectl on your client machine as well, so that you no longer need to run kubbectl commands only on the master.  To do this copy ubuntu's .kube directory into your own hohme folder on your client machine, and you can directly control your shiny new k8s single master cluster.
+At this point, you can install kubectl on your client machine as well, so that you no longer need to run kubectl commands only on the master.  To do this copy ubuntu's .kube directory into your own home folder on your client machine, and you can directly control your shiny new k8s single master cluster.
 
 Setting Up the Worker Nodes
 ---------------------------
 
-Alright, enough mocking this single master cluster, let's add some workers. This involves executing a single command on each, that includes the cluster information, such as the IP address and port of the master's API Server and a secure token-- not just  anyone can join.
+Enough mocking this single master cluster, let's add some workers. This involves executing a single command on each, that includes the cluster information, such as the IP address and port of the master's API Server and a secure token -- not just  anyone can join.
 
 https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/4-%20workers.yml?at=refs%2Fheads%2Fmaster
 
@@ -277,7 +277,7 @@ Here you should see one Master and two Workers, in a happy ready state.
 
 Let's now make sure that we can spin up pods and containers and deployments oh my!
 
-So while you're still  on the master, let's creater the most basic of deployments.
+So while you're still  on the master, let's create the most basic of deployments.
 
 	$ kubectl run nginx --image=nginx --port 80
 
@@ -300,7 +300,7 @@ Now let's clean up.
 Setting up Helm
 ---------------
 
-Package managers are a very familiar concept, they're used to facilitate software deployment.  The days of building software are long gone, now we yum install or apt-get install.  In K8s, this facility is provided by a tool called Helm.  While yum installs rpms and apt-get installs deb files, helm installs heml charts.
+Package managers are a very familiar concept, they're used to facilitate software deployment.  The days of building software are long gone, now we yum install or apt-get install.  In K8s, this facility is provided by a tool called Helm.  While yum installs rpms and apt-get installs deb files, helm installs helm charts.
 
 Install helm on your client node. Once installed, helm init will install tiller (the server-side portion of helm) onto your k8s cluster.
 
@@ -441,10 +441,10 @@ All you have to do is point a wildcard DNS to the master IP, and HAProxy will ro
 In our case, we are assigning *.netgovern.ai to our HAProxy installation.  This is done in DNS and is outside the scope of this document.
 
 
-Setting up Netgovern services
+Setting up NetGovern services
 -----------------------------
 
-Installing the AI service is as straight forward as other helm charts once you add netgovern's helm repo as such:
+Installing the AI service is as straight forward as other helm charts once you add NetGovern's helm repo as such:
 
     $ helm repo add netgovern http://charts.netgovern.ai
 
@@ -470,7 +470,7 @@ Before we install the chart, let's create the namespace it requires:
 
 	$ kubectl create -f namespace.yaml
 
-And then proceed to install the chart (postgress persistence requires shared storage, which is beyond the scope of this document, so we will skip over that):
+And then proceed to install the chart (postgres persistence requires shared storage, which is beyond the scope of this document, so we will skip over that):
 
     $ helm install --set postgresql.persistence.enabled=false netgovern/netgovernai
 
