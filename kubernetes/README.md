@@ -397,7 +397,28 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 
 	$ kubectl apply -f dashboard-adminuser.yaml
 
-	$ vi dashboard-rolebinding.yaml
+https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/b-%20rbac-auth.yaml?at=refs%2Fheads%2Fmaster
+
+	$ vi rbac-config.yaml
+	
+	apiVersion: rbac.authorization.k8s.io/v1
+	kind: ClusterRoleBinding
+	metadata:
+	  name: admin-user
+	roleRef:
+	  apiGroup: rbac.authorization.k8s.io
+	  kind: ClusterRole
+	  name: cluster-admin
+	subjects:
+	- kind: ServiceAccount
+	  name: admin-user
+	  namespace: kube-system
+	  
+	  $ kubectl apply -f rbac-auth.yaml
+
+https://bitbucket.netmail.com/projects/PUB/repos/deployments/browse/kubernetes/kube-cluster/c-%20rbac-config.yaml
+
+	$ vi rbac-config.yaml
 
 	apiVersion: rbac.authorization.k8s.io/v1
 	kind: ClusterRoleBinding
@@ -412,7 +433,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 	  name: admin-user
 	  namespace: kube-system
 
-	$ kubectl apply -f dashboard-rolebinding.yaml
+	$ kubectl apply -f rbac-config.yaml
 
 	$ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
 
