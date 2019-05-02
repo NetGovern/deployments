@@ -44,9 +44,78 @@ Frontend IP configurations --> Your public IP address configuration.
 ![alt text](./images/app-gateway-10.png "DNS Name")
 
 ## Create Additional Listeners
+
 In order to create additional Frontend listeners go to "Listeners" and then choose "Multi-site" to share the same IP (Additional IP addresses can be configured as well).
 The following example shows how to add a Multisite Listener in order to reuse the same settings used at the first step (Deployment):  
 ![alt text](./images/app-gateway-11.png "Add Multisite")
 
 After a new multisite is created, follow the previous steps at the "Configuration" section.
 
+## Renew certificate
+
+A certificate can be renewed following the below steps
+
+1. If the certificate to use is not in a PFX format, convert it
+2. Use the portal to update the certificate
+or
+3. Use AZ CLI / Powershell
+
+## Convert a CRT cert to PFX
+
+The following example uses a linux box to convert the certificate:
+Using the openssl command:
+
+```bash
+openssl pkcs12 -export -out newcertificate.pfx -inkey private-key-file -in cert-file
+```
+
+newcertificate.pfx is the path to the new certificate that you will generate based on your private key and certificate.  (If you have a certificate with all the keys included, you have to put the same file name for both parameters)
+
+Enter an export password when prompted:
+
+```bash
+Enter Export Password:
+Verifying - Enter Export Password:
+```
+
+## Update the certificate using Azure Portal
+
+1. Navigate to the resource pool where the App. Gateway was deployed and click on it.  Select Listeners and choose the listener with the certificate that needs renewal.  Expand the "Renew or edit selected certificate" and upload it
+![alt text](./images/app-gateway-12.png "Renew certificate")
+
+2. Click on Save and wait for the process to finish
+
+## Update the certificate using AZ CLI
+
+1. You need to have Azure CLI installed.  The following link covers the installation: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest and https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest
+
+2. run the following  to log in and make sure that you are using the correct subscription (verify `isDefault: true`)
+    ```bash
+    az login
+    ```
+
+3. Use the following command, replacing with your own info
+    ```bash
+    az network application-gateway ssl-cert update \
+        -n "<CertName>" \
+        --gateway-name "<AppGatewayName>" \
+        -g "ResourceGroupName>" \
+        --cert-file <PathToCerFile> \
+        --cert-password '<password>'
+    ```
+
+4. When it finishes it outputs something like:
+```json
+{
+  "data": null,
+  "etag": "W/\"xxxxxxxx-xxxx-xxxx-xxxx-dxxxxxxxx\"",
+  "id": "/subscriptions/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/resourceGroups/production/providers/Microsoft.Network/applicationGateways/yourAppGateway/sslCertificates/yourcertname",
+  "keyVaultSecretId": null,
+  "name": "yourcertname",
+  "password": null,
+  "provisioningState": "Succeeded",
+  "publicCertData": "EDITEDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "resourceGroup": "YourResourceGroup",
+  "type": "Microsoft.Network/applicationGateways/sslCertificates"
+}
+```
