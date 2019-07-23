@@ -295,49 +295,27 @@ In our case, we are assigning *.netgovern.ai to our HAProxy installation.  This 
 Setting up NetGovern services
 -----------------------------
 
-Installing the AI service is as straight forward as other helm charts once you add NetGovern's helm repo as such:
+Installing the AI service is as simple as running just a few commands.
 
-    $ helm repo add netgovern http://charts.netgovern.ai
+As the Ubuntu user, run:
 
-Verify that it it correct:
+	wget -O /$HOME/k8s.tgz https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/k8s.tgz?at=refs%2Fheads%2Fmaster
+	
+	tar xzvf $HOME/k8s.tgz && find ./k8s-files | grep \.\_ | xargs -n1 -I{} rm {}
+	
+	
+	kubectl create configmap aidbconfig --from-file=./k8s-files/scripts/
+	kubectl create -f ./k8s-files/yaml/monitoring/namespaces.yaml
+	kubectl create -f ./k8s-files/yaml/monitoring/metrics-server/
+	kubectl create -f ./k8s-files/yaml/monitoring/prometheus/
+	kubectl create -f ./k8s-files/yaml/monitoring/custom-metrics-api/
+	kubectl create -f ./k8s-files/yaml/nlp/ 
+	kubectl create -f ./k8s-files/yaml/azure/
+	
+Once this is done, you can run:
 
-    $ helm search netgovern
+	kubectl get all --all-namespaces
+	
+To verify your deployment.
 
-Before we install the chart, let's create the namespace it requires:
-
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/d-%20namespace.yaml?at=refs%2Fheads%2Fmaster
-
-	$ vi namespace.yaml
-
-	{
-	  "kind": "Namespace",
-	  "apiVersion": "v1",
-	  "metadata": {
-	    "name": "monitoring",
-	    "labels": {
-	      "name": "monitoring"
-	    }
-	  }
-	}
-
-
-	$ kubectl create -f namespace.yaml
-
-And then proceed to install the chart (postgres persistence requires shared storage, which is beyond the scope of this document, so we will skip over that):
-
-    $ helm install --set postgresql.persistence.enabled=false netgovern/netgovernai
-
-Once running, and the system has been given time to settle, we can  verify the installation like so:
-
-    $ helm list
-
-And:
-
-    $ kubectl get all
-
-Or examining the dashboard to ensure everything is ok.
-
-Tweaks
-------
-
-- fix access to node/stats for metrics server
+The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
