@@ -5,7 +5,7 @@ Kubernetes is a container orchestration system, it manages containers, it is ope
 
 There are many commercially supported distributions (IBM Cloud Private, Kontena Pharos, Kublr, SuSe CaaS) following the steps below will get you going if you want to do it on your own. 
 
-Kubeadm automates the installation and configuration of Kubernetes components such as the API server, Controller Manager, and Kube DNS. It does not, however, create users or handle the installation of software or its dependencies and its configuration. For these preliminary tasks we will use Ansible.
+Kubeadm automates the installation and configuration of Kubernetes components such as the API server, Controller Manager, and Kube DNS. It does not, however, create users or handle the installation of software or its dependencies and its configuration. In this instance, the provided OVF has all the pre-requisites installed.
 
 
 Kubernetes concepts
@@ -46,30 +46,6 @@ Prerequisites
 - Two instances of the k8s VM.
 	- One Master with 4GBB RAM and 4CPU and 500GB storage
 	- One worker with as much RAM and CPU as you can give it, as it will do the work, and 200GB storage
-- Ansible installed on your local machine.
-
-
-Setting Up the Workspace Directory and Ansible Inventory File
--------------------------------------------------------------
-
-Create a directory on your local machine that will serve as your workspace. Ansible will be configured locally so that it can communicate with and execute commands on your remote servers. Once that's done, Create a hosts file containing the IP addresses of your servers and the groups that each server belongs to.
-
-
-	$ mkdir ~/kube-cluster
-	$ cd ~/kube-cluster
-	$ vi ~/kube-cluster/hosts
-
-	[masters]
-	master ansible_host=master_ip ansible_user=root
-	
-	[workers]
-	worker1 ansible_host=worker_1_ip ansible_user=root
-	
-	[all:vars]
-	ansible_python_interpreter=/usr/bin/python3
-
-Now that you have the server inventory with groups, install the operating system level dependencies and create configuration settings.
-
 
 Creating a Non-Root User on All Remote Servers
 ----------------------------------------------
@@ -84,7 +60,7 @@ SSH over to the master and configure k8s running this one command as root:
 
 	kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
 	
-Now, let's take note of the  join command, so that we can use it later to join workers:
+Now, **let's take note** of the join command, _so that we can use it later to join workers_:
 
 	kubeadm token create --print-join-command
 	
@@ -98,6 +74,10 @@ Then as the ubuntu user, set up the networking:
 
 	sudo su - ubuntu
 	kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml >> pod_network_setup.txt
+
+(In some cases, if containers  like CoreDNS don't load well, install weave instead as below)
+
+	kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
 
 This is where we actually get things going. Kubeadm init creates the cluster, and set the inter node network all the pods will live on.  This happens to be the default network space for flannel, and we're just opportunistically informing the master node that that's what we'll be using. We then create the .kube directory in ubuntu's home folder and copy /etc/kubernetes/admin.conf into it. This is the directory you copy from machine to machine to cheat and run kubectl locally.
@@ -218,7 +198,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 
 https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/b-%20rbac-auth.yaml?at=refs%2Fheads%2Fmaster
 
-	$ vi rbac-config.yaml
+	$ vi rbac-auth.yaml
 	
 	apiVersion: rbac.authorization.k8s.io/v1
 	kind: ClusterRoleBinding
