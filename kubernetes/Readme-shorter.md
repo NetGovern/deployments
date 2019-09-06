@@ -56,42 +56,9 @@ With that done, the groundwork is laid to begin deploying Kubernetes.
 
 Setting Up the Master Node
 --------------------------
-SSH over to the master and configure k8s running this one command as root:
+SSH over to the master and run this one command as ubuntu:
 
-	kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
-	
-Now, **let's take note** of the join command, _so that we can use it later to join workers_:
-
-	kubeadm token create --print-join-command
-	
-Then copy the configuration over to the ubuntu user:
-
-	mkdir /home/ubuntu/.kube
-	cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
-	chown -R ubuntu.ubuntu /home/ubuntu
-	
-Then as the ubuntu user, set up the networking:
-
-	sudo su - ubuntu
-	kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml >> pod_network_setup.txt
-
-(In some cases, if containers  like CoreDNS don't load well, install weave instead as below)
-
-	kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-
-
-This is where we actually get things going. Kubeadm init creates the cluster, and set the inter node network all the pods will live on.  This happens to be the default network space for flannel, and we're just opportunistically informing the master node that that's what we'll be using. We then create the .kube directory in ubuntu's home folder and copy /etc/kubernetes/admin.conf into it. This is the directory you copy from machine to machine to cheat and run kubectl locally.
-
-Once kubectl is configured with that file, the  last task runs kubectl apply to install Flannel and enable inter pod networking.
-
-Let's now confirm everything works by connecting to the master and running kubectl.
-
-	$ ssh ubuntu@master_ip
-	$ kubectl get nodes
-
-This should return a list of nodes, one node, one master node, in a ready state, like so:
-	
-![](https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/screenshots/kubectl-get-nodes-master.jpg?at=refs%2Fheads%2Fmaster)
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O run-on-master.sh && chmod +x run-on-master.sh && ./run-on-master
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
