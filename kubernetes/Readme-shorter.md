@@ -86,6 +86,18 @@ With our kubectl connected to our cluster as a pre requisite (from the master se
 	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O helm-and-dashboard.sh && chmod +x helm-and-dashboard.sh && ./helm-and-dashboard.sh
 
 
+Setting up NetGovern services
+-----------------------------
+
+Installing the AI service is as simple as running just a few commands.
+
+As the Ubuntu user, run:
+
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O install-netgovernai.sh && chmod +x install-netgovernai.sh && ./install-netgovernai.sh
+
+The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
+
+
 Optionally Setting up HAProxy (on, or off the system)
 -----------------------------------------------------
 
@@ -121,14 +133,3 @@ All you have to do is point a wildcard DNS to the master IP, and HAProxy will ro
 
 In our case, we are assigning *.netgovern.ai to our HAProxy installation.  This is done in DNS and is outside the scope of this document.
 
-
-Setting up NetGovern services
------------------------------
-
-Installing the AI service is as simple as running just a few commands.
-
-As the Ubuntu user, run:
-
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O install-netgovernai.sh && chmod +x install-netgovernai.sh && ./install-netgovernai.sh
-
-The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
