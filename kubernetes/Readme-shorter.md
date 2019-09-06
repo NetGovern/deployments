@@ -58,7 +58,7 @@ Setting Up the Master Node
 --------------------------
 SSH over to the master and run this one command as ubuntu:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O run-on-master.sh && chmod +x run-on-master.sh && ./run-on-master
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O run-on-master.sh && chmod +x run-on-master.sh && ./run-on-master.sh'
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
@@ -74,8 +74,8 @@ To join, simply run, as the root user on the worker node, the kubeadm command we
 	kubeadm join 1.2.3.4:6443 --token YOURTOKENHERE --discovery-token-ca-cert-hash sha256:LOTSOFNUMBERSHERE
 
 
-Setting up Helm
----------------
+Setting up Helm & Dashboard
+---------------------------
 
 Package managers are a very familiar concept, they're used to facilitate software deployment.  The days of building software are long gone, now we yum install or apt-get install.  In K8s, this facility is provided by a tool called Helm.  While yum installs rpms and apt-get installs deb files, helm installs helm charts.
 
@@ -83,128 +83,11 @@ Install helm on your client node. Once installed, helm init will install tiller 
 
 With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm.
 
-Getting helm varies by distribution, but in most cases you can use snap to install it.
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O helm-and-dashboard.sh && chmod +x helm-and-dashboard.sh && ./helm-and-dashboard.sh'
 
-	$ sudo snap install helm --classic
 
-Now, since we do RBAC, let's enable the tiller account for use with helm:
-
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
-
-	$ vi rbac-config.yaml
-
-	apiVersion: v1
-	kind: ServiceAccount
-	metadata:
-	  name: tiller
-	  namespace: kube-system
-	---
-	apiVersion: rbac.authorization.k8s.io/v1
-	kind: ClusterRoleBinding
-	metadata:
-	  name: tiller
-	roleRef:
-	  apiGroup: rbac.authorization.k8s.io
-	  kind: ClusterRole
-	  name: cluster-admin
-	subjects:
-	  - kind: ServiceAccount
-	    name: tiller
-	    namespace: kube-system
-
-And then apply it:
-
-	$ kubectl create -f rbac-config.yaml
-
-And then get helm using it:
-
-	$ helm init --service-account tiller
-
-Confirming helm is correctly installed, you can search for charts.
-
-	$ helm search
-
-This should list available things to install.
-
-Setting up K8s Dashboard
-------------------------
-
-Running kubernetes implies comfort with the command line, but sometimes visuals help. The K8s dashboard is now easily installable:
-
-	$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
-
-Which will, after a few minutes, and when ready and listable in:
-
-	$ kubectl -n kube-system get all
-
-Then it will return connection information for connecting to the dashboard.
-
-The dashboard is a protected resource, and is usually only manageable locally using kube-proxy.  If you want to change that, you can edit the dashboard's yaml file and change the Type from ClusterIP to NodePort.
-
-	$ kubectl -n kube-system edit service kubernetes-dashboard
-
-You will then need to get the port it listens on like so:
-
-	$ kubectl -n kube-system get services kubernetes-dashboard
-
-And then you can connect to it at https://masterIP:port
-
-You'll need a user, and a token, that you can get as such:
-
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/a-%20dashboard-adminuser.yaml?at=refs%2Fheads%2Fmaster
-
-	$ vi dashboard-adminuser.yaml
-
-	apiVersion: v1
-	kind: ServiceAccount
-	metadata:
-	  name: admin-user
-	  namespace: kube-system
-
-	$ kubectl apply -f dashboard-adminuser.yaml
-
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/b-%20rbac-auth.yaml?at=refs%2Fheads%2Fmaster
-
-	$ vi rbac-auth.yaml
-	
-	apiVersion: rbac.authorization.k8s.io/v1
-	kind: ClusterRoleBinding
-	metadata:
-	  name: admin-user
-	roleRef:
-	  apiGroup: rbac.authorization.k8s.io
-	  kind: ClusterRole
-	  name: cluster-admin
-	subjects:
-	- kind: ServiceAccount
-	  name: admin-user
-	  namespace: kube-system
-	  
-	  $ kubectl apply -f rbac-auth.yaml
-
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
-
-	$ vi rbac-config.yaml
-
-	apiVersion: rbac.authorization.k8s.io/v1
-	kind: ClusterRoleBinding
-	metadata:
-	  name: admin-user
-	roleRef:
-	  apiGroup: rbac.authorization.k8s.io
-	  kind: ClusterRole
-	  name: cluster-admin
-	subjects:
-	- kind: ServiceAccount
-	  name: admin-user
-	  namespace: kube-system
-
-	$ kubectl apply -f rbac-config.yaml
-
-	$ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
-
-Setting up HAProxy (on, or off the system)
-------------------
+Optionally Setting up HAProxy (on, or off the system)
+-----------------------------------------------------
 
 Kubernetes' networking fabric makes sure that every port on every pod is available on every node.  But, it does not go make your resources easy to access for people who don't want to remember cryptic port numbers.
 
