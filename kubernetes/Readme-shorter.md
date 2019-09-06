@@ -81,7 +81,7 @@ Package managers are a very familiar concept, they're used to facilitate softwar
 
 Install helm on your client node. Once installed, helm init will install tiller (the server-side portion of helm) onto your k8s cluster.
 
-With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm.
+With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm as the ubuntu user.
 
 	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O helm-and-dashboard.sh && chmod +x helm-and-dashboard.sh && ./helm-and-dashboard.sh
 
