@@ -83,7 +83,7 @@ Install helm on your client node. Once installed, helm init will install tiller 
 
 With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm.
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O helm-and-dashboard.sh && chmod +x helm-and-dashboard.sh && ./helm-and-dashboard.sh'
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O helm-and-dashboard.sh && chmod +x helm-and-dashboard.sh && ./helm-and-dashboard.sh
 
 
 Optionally Setting up HAProxy (on, or off the system)
@@ -129,23 +129,6 @@ Installing the AI service is as simple as running just a few commands.
 
 As the Ubuntu user, run:
 
-	wget -O /$HOME/k8s.tgz https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/k8s.tgz?at=refs%2Fheads%2Fmaster
-	
-	tar xzvf $HOME/k8s.tgz && find ./k8s-files | grep \.\_ | xargs -n1 -I{} rm {}
-	
-	
-	kubectl create configmap aidbconfig --from-file=./k8s-files/scripts/
-	kubectl create -f ./k8s-files/yaml/monitoring/namespaces.yaml
-	kubectl create -f ./k8s-files/yaml/monitoring/metrics-server/
-	kubectl create -f ./k8s-files/yaml/monitoring/prometheus/
-	kubectl create -f ./k8s-files/yaml/monitoring/custom-metrics-api/
-	kubectl create -f ./k8s-files/yaml/nlp/ 
-	kubectl create -f ./k8s-files/yaml/azure/
-	
-Once this is done, you can run:
-
-	kubectl get all --all-namespaces
-	
-To verify your deployment.
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O install-netgovernai.sh && chmod +x install-netgovernai.sh && ./install-netgovernai.sh
 
 The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
