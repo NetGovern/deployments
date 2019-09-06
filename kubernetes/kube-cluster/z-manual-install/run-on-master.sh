@@ -36,3 +36,8 @@ done
 echo "Pod Status:"
 echo "-----------"
 kubectl get pods -o=wide --all-namespaces
+
+echo "**************************************************"
+echo "*** Please take note of your cluster join command:"
+echo "**************************************************"
+kubeadm token create --print-join-command
