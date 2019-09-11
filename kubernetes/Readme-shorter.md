@@ -58,7 +58,7 @@ Setting Up the Master Node
 --------------------------
 SSH over to the master and run this one command as ubuntu:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O run-on-master.sh && chmod +x run-on-master.sh && ./run-on-master.sh
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O ~/run-on-master.sh && chmod +x ~/run-on-master.sh && ~/run-on-master.sh
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
@@ -83,7 +83,7 @@ Install helm on your client node. Once installed, helm init will install tiller 
 
 With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm as the ubuntu user.
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O helm-and-dashboard.sh && chmod +x helm-and-dashboard.sh && ./helm-and-dashboard.sh
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/helm-and-dashboard.sh && chmod +x ~/helm-and-dashboard.sh && ~/helm-and-dashboard.sh
 
 
 Setting up NetGovern services
@@ -93,7 +93,7 @@ Installing the AI service is as simple as running just a few commands.
 
 As the Ubuntu user, run:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O install-netgovernai.sh && chmod +x install-netgovernai.sh && ./install-netgovernai.sh
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O ~/install-netgovernai.sh && chmod +x ~/install-netgovernai.sh && ~/install-netgovernai.sh
 
 The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
 
