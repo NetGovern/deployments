@@ -58,7 +58,7 @@ Setting Up the Master Node
 --------------------------
 SSH over to the master and run this one command as ubuntu:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O run-on-master.sh && chmod +x run-on-master.sh && ./run-on-master.sh'
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O run-on-master.sh && chmod +x run-on-master.sh && ./run-on-master.sh
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
