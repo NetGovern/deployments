@@ -8,12 +8,16 @@ tar xzvf $HOME/k8s.tgz && find ./k8s-files | grep \.\_ | xargs -n1 -I{} rm {}
 
 echo "Deploying"
 kubectl create configmap aidbconfig --from-file=./k8s-files/scripts/
-kubectl create -f ./k8s-files/yaml/monitoring/namespaces.yaml
-kubectl create -f ./k8s-files/yaml/monitoring/metrics-server/
-kubectl create -f ./k8s-files/yaml/monitoring/prometheus/
-kubectl create -f ./k8s-files/yaml/monitoring/custom-metrics-api/
-kubectl create -f ./k8s-files/yaml/nlp/ 
-kubectl create -f ./k8s-files/yaml/azure/
+if [ $? -ne 0 ]; then
+    kubectl create configmap aidbconfig --from-file=./k8s-files/scripts/ -o yaml --dry-run | kubectl replace -f -
+fi
+
+kubectl apply -f ./k8s-files/yaml/monitoring/namespaces.yaml
+kubectl apply -f ./k8s-files/yaml/monitoring/metrics-server/
+kubectl apply -f ./k8s-files/yaml/monitoring/prometheus/
+kubectl apply -f ./k8s-files/yaml/monitoring/custom-metrics-api/
+kubectl apply -f ./k8s-files/yaml/nlp/ 
+kubectl apply -f ./k8s-files/yaml/azure/
 
 Echo "Results"
 
