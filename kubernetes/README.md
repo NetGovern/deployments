@@ -74,18 +74,6 @@ To join, simply run, as the root user on the worker node, the kubeadm command we
 	kubeadm join 1.2.3.4:6443 --token YOURTOKENHERE --discovery-token-ca-cert-hash sha256:LOTSOFNUMBERSHERE
 
 
-Setting up Helm & Dashboard
----------------------------
-
-Package managers are a very familiar concept, they're used to facilitate software deployment.  The days of building software are long gone, now we yum install or apt-get install.  In K8s, this facility is provided by a tool called Helm.  While yum installs rpms and apt-get installs deb files, helm installs helm charts.
-
-Install helm on your client node. Once installed, helm init will install tiller (the server-side portion of helm) onto your k8s cluster.
-
-With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm as the ubuntu user.
-
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/helm-and-dashboard.sh && chmod +x ~/helm-and-dashboard.sh && ~/helm-and-dashboard.sh
-
-
 Setting up NetGovern services
 -----------------------------
 
@@ -96,6 +84,18 @@ As the Ubuntu user, run:
 	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O ~/install-netgovernai.sh && chmod +x ~/install-netgovernai.sh && ~/install-netgovernai.sh
 
 The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
+
+
+Setting up Helm & Dashboard (recommended)
+---------------------------
+
+Package managers are a very familiar concept, they're used to facilitate software deployment.  The days of building software are long gone, now we yum install or apt-get install.  In K8s, this facility is provided by a tool called Helm.  While yum installs rpms and apt-get installs deb files, helm installs helm charts.
+
+Install helm on your client node. Once installed, helm init will install tiller (the server-side portion of helm) onto your k8s cluster.
+
+With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm as the ubuntu user.
+
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/helm-and-dashboard.sh && chmod +x ~/helm-and-dashboard.sh && ~/helm-and-dashboard.sh
 
 
 Optionally Setting up HAProxy (on, or off the system)
