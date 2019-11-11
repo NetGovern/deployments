@@ -64,12 +64,6 @@ Master nodes are cool, but, you can't actually run pods on the master, that's no
 
 At this point, you can install kubectl on your client machine as well, so that you no longer need to run kubectl commands only on the master.  To do this copy ubuntu's .kube directory into your own home folder on your client machine, and you can directly control your shiny new k8s single master cluster.
 
-To have a worker join, we needed to run
-
-	kubeadm token create --print-join-command
-
-to get the token to use in the worker node section.
-
 Setting Up the Worker Node
 ---------------------------
 
