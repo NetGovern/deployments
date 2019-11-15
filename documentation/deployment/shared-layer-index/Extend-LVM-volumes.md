@@ -27,7 +27,7 @@ To force a rescan, run the following as root:
 ```bash
 echo "- - -" > /sys/devices/pci0000:00/0000:00:07.1/ata1/host1/scsi_host/host1/scan
 echo "- - -" > /sys/devices/pci0000:00/0000:00:07.1/ata2/host2/scsi_host/host2/scan
-echo "- - -" > /sys/devices/pci0000:00/0000:00:10.0/host0/scsi_host/host0/scan
+echo "- - -" > /sys/devices/pci0000:00/0000:00:10.0/host0/scsi_host/host0/scan``
 ```
 
 The following one-liner re scans all of the hosts:
