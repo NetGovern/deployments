@@ -31,7 +31,7 @@ edir.multitenant=false
 "@
 
 $mdb_conf = @"
-Driver=MDBLDAP machine=[hostname]&basedn=o%3D[tenant_id]%2Co%3Dnetmail&map=cn%3Dcloud,cn%3Dsystem,o%3D[tenant_id],o%3Dnetmail%7Ccn%3Dsystem,o%3Dnetmail
+Driver=MDBLDAP machine=[hostname]&tenantID=[tenant_id]&basedn=o%3D[tenant_id]%2Co%3Dnetmail&map=cn%3Dcloud,cn%3Dsystem,o%3D[tenant_id],o%3Dnetmail%7Ccn%3Dsystem,o%3Dnetmail
    ldap://[ldap_server]#0
 "@
 
