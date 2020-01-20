@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo "Installing Helm as root"
-snap install helm --classic
-
 echo "Installing k8s Dashboard"
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
 

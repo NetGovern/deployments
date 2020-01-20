@@ -104,7 +104,9 @@ Install helm on your client node. Once installed, helm init will install tiller 
 
 With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm as the ubuntu user.
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/helm-and-dashboard.sh && chmod +x ~/helm-and-dashboard.sh && sudo ~/helm-and-dashboard.sh
+	sudo snap install helm --classic
+
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/dashboard.sh && chmod +x ~/dashboard.sh && ~/dashboard.sh
 
 
 Optionally Setting up HAProxy (on, or off the system)
