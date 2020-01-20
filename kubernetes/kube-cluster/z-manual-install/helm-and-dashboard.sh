@@ -3,12 +3,6 @@
 echo "Installing Helm as root"
 sudo snap install helm --classic
 
-echo "Enabling Tiller"
-kubectl create -f https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
-
-echo "Configuring Helm to use tiller"
-helm init --service-account tiller
-
 echo "Installing k8s Dashboard"
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
 
