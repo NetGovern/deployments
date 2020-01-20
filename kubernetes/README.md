@@ -21,7 +21,7 @@ This functionality is provided by pod network plugins. For this cluster, we will
 
 The API server acts as the inbound vector for all management commands.  DNS is provided by CoreDNS and by default piggybacks onto the host DNS.
 
-Kubb=ernetes is declarative, that  is to say, a configuration  file, a yaml file, describes a desired state.  Once you deploy such an item, the Kubernetes system will ensure that it maintains the described state for that deployment.
+Kubernetes is declarative, that  is to say, a configuration  file, a yaml file, describes a desired state.  Once you deploy such an item, the Kubernetes system will ensure that it maintains the described state for that deployment.
 
 A deployment is a type of Kubernetes object that ensures there's always a specified number of pods running based on a defined template, that upgrades are dealt with in a specific way, etc... 
 
@@ -56,9 +56,12 @@ With that done, the groundwork is laid to begin deploying Kubernetes.
 
 Setting Up the Master Node
 --------------------------
-SSH over to the master and run this one command as ubuntu:
+SSH over to the master and run these two commands as ubuntu:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master.sh?at=refs%2Fheads%2Fmaster -O ~/run-on-master.sh && chmod +x ~/run-on-master.sh && ~/run-on-master.sh
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master-root.sh?at=refs%2Fheads%2Fmaster -O ~/run-on-master-root.sh && chmod +x ~/run-on-master-root.sh && sudo ~/run-on-master-root.sh
+	
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master-ubuntu.sh?at=refs%2Fheads%2Fmaster -O ~/run-on-master-ubuntu.sh && chmod +x ~/run-on-master-ubuntu.sh && ~/run-on-master-ubuntu.sh
+
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
@@ -66,6 +69,8 @@ At this point, you can install kubectl on your client machine as well, so that y
 
 Setting Up the Worker Node
 ---------------------------
+
+*NOTE, please ensure the hostname and IP address have been set for the worker node(s) before joining, to avoid taking over the master's IP*
 
 Enough mocking this single master cluster, let's add a worker. This involves executing a single command on each, that includes the cluster information, such as the IP address and port of the master's API Server and a secure token -- not just  anyone can join.
 
@@ -95,7 +100,7 @@ Install helm on your client node. Once installed, helm init will install tiller 
 
 With our kubectl connected to our cluster as a pre requisite (from the master section  where we copied the .kube directory), we can install helm as the ubuntu user.
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/helm-and-dashboard.sh && chmod +x ~/helm-and-dashboard.sh && ~/helm-and-dashboard.sh
+	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/helm-and-dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/helm-and-dashboard.sh && chmod +x ~/helm-and-dashboard.sh && sudo ~/helm-and-dashboard.sh
 
 
 Optionally Setting up HAProxy (on, or off the system)
