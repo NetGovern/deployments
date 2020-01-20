@@ -74,6 +74,10 @@ Setting Up the Worker Node
 
 Enough mocking this single master cluster, let's add a worker. This involves executing a single command on each, that includes the cluster information, such as the IP address and port of the master's API Server and a secure token -- not just  anyone can join.
 
+Let's make sure hostnames changes are maintained across reboots:
+
+	sed -i 's/preserve_hostname\:\ false/preserve_hostname\: true/' /etc/cloud/cloud.cfg
+
 To join, simply run, as the root user on the worker node, the kubeadm command we got from the previous step (just an example below):
 
 	kubeadm join 1.2.3.4:6443 --token YOURTOKENHERE --discovery-token-ca-cert-hash sha256:LOTSOFNUMBERSHERE
