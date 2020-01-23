@@ -16,7 +16,6 @@ kubectl apply -f ./k8s-files/yaml/monitoring/namespaces.yaml
 kubectl apply -f ./k8s-files/yaml/monitoring/metrics-server/
 kubectl apply -f ./k8s-files/yaml/monitoring/prometheus/
 kubectl apply -f ./k8s-files/yaml/monitoring/custom-metrics-api/
-kubectl apply -f ./k8s-files/yaml/nlp/ 
 kubectl apply -f ./k8s-files/yaml/azure/
 
 Echo "Results"
