@@ -305,52 +305,62 @@ function discoverArchiveNodes {
     $params += " -b `"${baseDn}`" `"objectclass=maGWClusterNode`" cn maID"
     $ldif = Invoke-Expression "& `"$ldapsearch`" $params"
     #parse ldif results
+    $masterFound = $false
     ($ldif | Select-String "Nodes, GWOpenNode, archiving," -Context 0, 3) | `
     ForEach-Object {
         $nodeType = (($_.Context.PostContext | Select-String "cn:") -split 'cn: ')[1]
         if ($nodeType -match 'Master') {
             $master = (($_.Context.PostContext | Select-String "maID:") -split 'maID: ')[1].Trim()
             Write-Host "Found Master: $master"
-        } else {
-            Write-Host "Master not found"
+            $masterFound = $true
         }
     }
-    Write-Host "Mapping Master \\$master\c$\Program Files (x86)\Messaging Architects"
-    Try {
-        New-PSDrive -name "Master" -PSProvider FileSystem `
-            -Root "\\$master\c$\Program Files (x86)\Messaging Architects" `
-            -Credential $windowsAdminCredentials | Out-Null
-    }
-    catch {
-        Write-Host "Cannot map \\$master\c$\Program Files (x86)\Messaging Architects as user: $windows_admin_user"
-        Write-Host "Cannot get list of Workers"
-    }
-    Write-Host "Master: mapped successfully"
-    [xml]$clusterConfig = Get-Content Master:\Config\ClusterConfig.xml
-    $workerList = ($clusterConfig.GWOpenConfig.Nodes.Node | Where-Object {
-            $_.Type -eq "Worker"
-    }).NodeID
-
-    $workerList + $master | ForEach-Object {
-        $archive = @{}
-        $infoJson = ''
-        $server = @{}
-        $server['tenant'] = $tenantId
-        Write-Host "Attempting to contact https://$_/info to gather platform information"
-        $params = '-k', '-s', "https://$_/info"
-        $infoJson = Invoke-Expression "& `"$curlExe`" $params" 
-        if (-not ([string]::IsNullOrEmpty($infoJson))) {
-            $clusterInfo = @{}
-            $infoJson = ($infoJson -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $clusterInfo[$_.Name] = $_.Value }
-            $server['version'] = $clusterInfo['netmail-archive'].version
-            $server['name'] = $clusterInfo['netmail-platform'].name
-            Write-Host "Platform information OK"
-        } else {
-            $server['version'] = "9.9.9.9"
-            $server['name'] = "not_reachable"
-            Write-Host "Cannot contact platform"
+    $archive = @{ }
+    if (! $masterFound) {
+        Write-Host "Master not found"
+    } else {
+        Write-Host "Mapping Master \\$master\c$\Program Files (x86)\Messaging Architects"
+        Try {
+            New-PSDrive -name "Master" -PSProvider FileSystem `
+                -Root "\\$master\c$\Program Files (x86)\Messaging Architects" `
+                -Credential $windowsAdminCredentials -ErrorAction Stop | Out-Null
+            Write-Host "Master: mapped successfully"
+        } catch {
+            Write-Host "Cannot map master's c$"
         }
-        $archive[$_] = $server
+        Try {
+            [xml]$clusterConfig = Get-Content Master:\Config\ClusterConfig.xml
+            $workerList = ($clusterConfig.GWOpenConfig.Nodes.Node | Where-Object {
+                    $_.Type -eq "Worker"
+                }).NodeID
+            if ($workerList.GetType().Name -eq "String") {
+                $workerList = @($workerList)
+            }
+        } catch {
+            Write-Host "Cannot get list of Workers"
+            $workerList = @()
+        }
+        $workerList + @($master) | Select-Object -Unique | ForEach-Object {
+            $infoJson = ''
+            $server = @{ }
+            $server['tenant'] = $tenantId
+            Write-Host "Attempting to contact https://$_/info to gather platform information"
+            $params = '-k', '-s', "https://$_/info"
+            $infoJson = Invoke-Expression "& `"$curlExe`" $params" 
+            if (-not ([string]::IsNullOrEmpty($infoJson))) {
+                $clusterInfo = @{ }
+                $infoJson = ($infoJson -join "`n" | ConvertFrom-Json).psobject.properties | ForEach-Object { $clusterInfo[$_.Name] = $_.Value }
+                $server['version'] = $clusterInfo['netmail-archive'].version
+                $server['name'] = $clusterInfo['netmail-platform'].name
+                Write-Host "Platform information OK"
+            }
+            else {
+                $server['version'] = "9.9.9.9"
+                $server['name'] = "not_reachable"
+                Write-Host "Cannot contact platform"
+            }
+            $archive[$_] = $server
+        }
     }
     return $archive
 }
