@@ -56,3 +56,22 @@ The below will only test for connectivity (it tries to log in to each discovered
 .\UpgradePod.ps1 -test_connectivity -ldap_admin_dn "cn=netmail,cn=system,o=netmail" -ldap_admin_dn_password "mypassword"
 
 ```
+
+## Special note about LDAP schema upgrade
+This script does not cover any schema upgrade to LDAP if the node has not been installed using NetGovern rpms. They will need to be handled manually if needed.
+
+In order to upgrade the ldap schema:
+
+Get the newest schema from the platform rpm,  by installing it in a disposable server or container and copying it:  /opt/ma/netmail/etc/netmail.schema.ldif
+Verify the location of the schema by looking at the service configuration. See the following example:
+
+```bash
+ cat /etc/openldap/slapd.conf
+include         /etc/openldap/schema/core.schema
+include         /etc/openldap/schema/netmail.schema.ldif
+```
+
+Stop the ldap service
+Make a backup of the old netmail.schema.ldif file
+Replace the new schema file with the one provided from the rpm
+Start the ldap service
