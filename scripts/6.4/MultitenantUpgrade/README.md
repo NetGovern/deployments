@@ -62,7 +62,8 @@ This script does not cover any schema upgrade to LDAP if the node has not been i
 
 In order to upgrade the ldap schema:
 
-Get the newest schema from the platform rpm,  by installing it in a disposable server or container and copying it:  /opt/ma/netmail/etc/netmail.schema.ldif
+Get the newest schema from the platform rpm,  by installing it in a disposable server or container and copying it:  /opt/ma/netmail/etc/netmail.schema.ldif  
+
 Verify the location of the schema by looking at the service configuration. See the following example:
 
 ```bash
