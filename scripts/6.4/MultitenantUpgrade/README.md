@@ -67,12 +67,12 @@ Get the newest schema from the platform rpm,  by installing it in a disposable s
 Verify the location of the schema by looking at the service configuration. See the following example:
 
 ```bash
- cat /etc/openldap/slapd.conf
+cat /etc/openldap/slapd.conf
 include         /etc/openldap/schema/core.schema
 include         /etc/openldap/schema/netmail.schema.ldif
 ```
 
-Stop the ldap service
-Make a backup of the old netmail.schema.ldif file
-Replace the new schema file with the one provided from the rpm
-Start the ldap service
+Stop the ldap service  
+Make a backup of the old netmail.schema.ldif file  
+Replace the new schema file with the one provided from the rpm  
+Start the ldap service  
