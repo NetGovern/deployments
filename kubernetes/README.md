@@ -58,9 +58,9 @@ Setting Up the Master Node
 --------------------------
 SSH over to the master and run these two commands as ubuntu:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master-root.sh?at=refs%2Fheads%2Fmaster -O ~/run-on-master-root.sh && chmod +x ~/run-on-master-root.sh && sudo ~/run-on-master-root.sh
+	wget https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/z-manual-install/run-on-master-root.sh -O ~/run-on-master-root.sh && chmod +x ~/run-on-master-root.sh && sudo ~/run-on-master-root.sh
 	
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/run-on-master-ubuntu.sh?at=refs%2Fheads%2Fmaster -O ~/run-on-master-ubuntu.sh && chmod +x ~/run-on-master-ubuntu.sh && ~/run-on-master-ubuntu.sh
+	wget https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/z-manual-install/run-on-master-ubuntu.sh -O ~/run-on-master-ubuntu.sh && chmod +x ~/run-on-master-ubuntu.sh && ~/run-on-master-ubuntu.sh
 
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
@@ -90,7 +90,7 @@ Installing the AI service is as simple as running just a few commands.
 
 As the Ubuntu user, run:
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh?at=refs%2Fheads%2Fmaster -O ~/install-netgovernai.sh && chmod +x ~/install-netgovernai.sh && ~/install-netgovernai.sh
+	wget https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/z-manual-install/install-netgovernai.sh -O ~/install-netgovernai.sh && chmod +x ~/install-netgovernai.sh && ~/install-netgovernai.sh
 
 The swagger UI is accessible through https://WORKERNODEIP:32160/swagger-ui.html
 
@@ -106,7 +106,7 @@ With our kubectl connected to our cluster as a pre requisite (from the master se
 
 	sudo snap install helm --classic
 
-	wget https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/z-manual-install/dashboard.sh?at=refs%2Fheads%2Fmaster -O ~/dashboard.sh && chmod +x ~/dashboard.sh && ~/dashboard.sh
+	wget https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/z-manual-install/dashboard.sh -O ~/dashboard.sh && chmod +x ~/dashboard.sh && ~/dashboard.sh
 
 
 Optionally Setting up HAProxy (on, or off the system)
