@@ -77,7 +77,7 @@ Creating a Non-Root User on All Remote Servers
 
 Add the following playbook to create a non-root user with sudo privileges on all of the servers.
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/1-%20initial.yml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/1-%20initial.yml
 
 	$ vi ~/kube-cluster/initial.yml
 
@@ -111,7 +111,7 @@ The bare minimum packages required by Kubernetes on Ubuntu 18.04LTS are Docker (
 
 Let's create the playbook that will deploy these to all the nodes.
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/2-%20kube-dependencies.yml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/2-%20kube-dependencies.yml
     
 	$ vi ~/kube-cluster/kube-dependencies.yml
 
@@ -166,7 +166,7 @@ Now run the playbook to push out all the components to the appropriate hosts.
 
 The output should look like this:
 	
-![](https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/screenshots/dep-success.jpg?at=refs%2Fheads%2Fmaster)
+![](https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/screenshots/dep-success.jpg)
 
 Docker, kubeadm, and kubelet are now installed on all the servers. Kubectl is only installed on the master node since you will run kubectl commands from there (or from your workstation)
 
@@ -178,7 +178,7 @@ Setting Up the Master Node
 
 Create an Ansible playbook named master.yml on your local machine:
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/3-%20master.yml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/3-%20master.yml
 
 	$ vi ~/kube-cluster/master.yml
 
@@ -229,7 +229,7 @@ Let's now confirm everything works by connecting to the master and running kubec
 
 This should return a list of nodes, one node, one master node, in a ready state, like so:
 	
-![](https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/screenshots/kubectl-get-nodes-master.jpg?at=refs%2Fheads%2Fmaster)
+![](https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/screenshots/kubectl-get-nodes-master.jpg)
 
 Master nodes are cool, but, you can't actually run pods on the master, that's not allowed.
 
@@ -240,7 +240,7 @@ Setting Up the Worker Nodes
 
 Enough mocking this single master cluster, let's add some workers. This involves executing a single command on each, that includes the cluster information, such as the IP address and port of the master's API Server and a secure token -- not just  anyone can join.
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/4-%20workers.yml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/4-%20workers.yml
 
 
 	$ vi ~/kube-cluster/workers.yml
@@ -297,7 +297,7 @@ Now you can verify the available services, and their port.
 	
 This should return a list of services like so:
 	
-![](https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/screenshots/nginx-service.jpg?at=refs%2Fheads%2Fmaster)
+![](https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/screenshots/nginx-service.jpg)
 
 
 Pay close attention to the exposed port, as that is the way to interact with your deployment;  it is usually in the form of a high port (usually 3xxxx). The container networking fabric takes care of routing requests form any host:port to the right pod, you can then browser to http://master_ip:3xxxx and you'll be whisked away and connected to the right service.
@@ -323,7 +323,7 @@ Getting helm varies by distribution, but in most cases you can use snap to insta
 
 Now, since we do RBAC, let's enable the tiller account for use with helm:
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/c-%20rbac-config.yaml
 
 	$ vi rbac-config.yaml
 
@@ -385,7 +385,7 @@ And then you can connect to it at https://masterIP:port
 
 You'll need a user, and a token, that you can get as such:
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/a-%20dashboard-adminuser.yaml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/a-%20dashboard-adminuser.yaml
 
 	$ vi dashboard-adminuser.yaml
 
@@ -397,7 +397,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 
 	$ kubectl apply -f dashboard-adminuser.yaml
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/b-%20rbac-auth.yaml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/b-%20rbac-auth.yaml
 
 	$ vi rbac-config.yaml
 	
@@ -416,7 +416,7 @@ https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube
 	  
 	  $ kubectl apply -f rbac-auth.yaml
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/c-%20rbac-config.yaml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/c-%20rbac-config.yaml
 
 	$ vi rbac-config.yaml
 
@@ -486,7 +486,7 @@ Verify that it it correct:
 
 Before we install the chart, let's create the namespace it requires:
 
-https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/kubernetes/kube-cluster/d-%20namespace.yaml?at=refs%2Fheads%2Fmaster
+https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/d-%20namespace.yaml
 
 	$ vi namespace.yaml
 
