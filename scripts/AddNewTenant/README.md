@@ -26,17 +26,17 @@ First of all, we need to gather the network and credentials information for the 
 
 ### You can download the below zip file containing the scripts listed below and unzip them in the same folder in the new archive master VM to be deployed.
 
-<a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/AddNewTenant/AddNewTenant.zip" target="_blank">AddNewTenant.zip</a>
+<a href="https://github.com/NetGovern/deployments/blob/master/scripts/AddNewTenant/AddNewTenant.zip" target="_blank">AddNewTenant.zip</a>
 
 Or
 
 
 ### You can download (Right-Click each link and select "Save As...") the following scripts/files to the same location in the new archive master VM to be deployed.  Make sure to Unblock them by right clicking on the downloaded files and choosing "Unblock"
 
-* <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/MasterSetupWizard.ps1" target="_blank">MasterSetupWizard.ps1</a>
-* <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/basedata.ps1" target="_blank">basedata.ps1</a>
-* <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/ConfigureDP.ps1" target="_blank">ConfigureDP.ps1</a>
-* <a href="https://bitbucket.netmail.com/projects/PUB/repos/deployments/raw/scripts/ngfunctions.ps1" target="_blank">ngfunctions.ps1</a>
+* <a href="https://github.com/NetGovern/deployments/tree/master/scripts/MasterSetupWizard.ps1" target="_blank">MasterSetupWizard.ps1</a>
+* <a href="https://github.com/NetGovern/deployments/tree/master/scripts/basedata.ps1" target="_blank">basedata.ps1</a>
+* <a href="https://github.com/NetGovern/deployments/tree/master/scripts/ConfigureDP.ps1" target="_blank">ConfigureDP.ps1</a>
+* <a href="https://github.com/NetGovern/deployments/tree/master/scripts/ngfunctions.ps1" target="_blank">ngfunctions.ps1</a>
 
 ---
 
