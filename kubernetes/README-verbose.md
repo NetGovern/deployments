@@ -399,7 +399,7 @@ https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-c
 
 https://raw.githubusercontent.com/NetGovern/deployments/master/kubernetes/kube-cluster/b-%20rbac-auth.yaml
 
-	$ vi rbac-config.yaml
+	$ vi rbac-auth.yaml
 	
 	apiVersion: rbac.authorization.k8s.io/v1
 	kind: ClusterRoleBinding
